@@ -12,9 +12,9 @@ export const dynamic = "force-dynamic";
 
 export default async function TournamentPage({
   params, searchParams,
-}: { params: Promise<{ complex: string; id: string }>; searchParams: Promise<{ cat?: string }> }) {
+}: { params: Promise<{ complex: string; id: string }>; searchParams: Promise<{ cat?: string; vista?: string }> }) {
   const { complex: slug, id } = await params;
-  const { cat: catId } = await searchParams;
+  const { cat: catId, vista } = await searchParams;
   const t = await db.tournament.findUnique({
     where: { id },
     include: { complex: true, categories: { orderBy: { name: "asc" } } },
@@ -60,7 +60,7 @@ export default async function TournamentPage({
         {cat && (
           <div className="mt-4">
             <EventInfo slug={slug} category={cat} tournament={t} complex={t.complex} open={cat.status === "REGISTRATION"} />
-            <CategoryView cat={cat} />
+            <CategoryView cat={cat} tab={vista} />
           </div>
         )}
         <p className="mt-10 flex items-center justify-center gap-2 text-xs text-neutral-400"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />Resultados en vivo: se actualizan solos</p>
