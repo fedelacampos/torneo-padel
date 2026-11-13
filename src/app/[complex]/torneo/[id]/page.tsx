@@ -21,6 +21,8 @@ export default async function TournamentPage({
   });
   if (!t || t.complex.slug !== slug) notFound();
   const selected = t.categories.find((c) => c.id === catId) ?? t.categories[0];
+  // Inscripción abierta si el torneo la tiene habilitada y alguna categoría todavía no se sorteó.
+  const canRegister = t.registrationOpen && t.categories.some((c) => c.status === "REGISTRATION");
   const cat = selected ? await getCategoryFull(selected.id) : null;
 
   return (
@@ -33,6 +35,12 @@ export default async function TournamentPage({
             {fmtDate(t.startDate)} al {fmtDate(t.endDate)}
           </p>
           <h1 className="font-display mt-1 text-4xl font-extrabold uppercase leading-none">{t.name}</h1>
+          {canRegister && (
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <Link href={`/${slug}/inscripcion?torneo=${t.id}`} className="btn-primary px-6 py-3 text-base">Inscribirme</Link>
+              <span className="chip bg-white/10 text-white ring-1 ring-white/20">Inscripción abierta</span>
+            </div>
+          )}
         </div>
       </section>
       <main className="mx-auto max-w-5xl px-4 py-5">

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { Header } from "@/components/Header";
@@ -5,12 +6,18 @@ import { RegistrationForm } from "./RegistrationForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function InscripcionPage({ params }: { params: Promise<{ complex: string }> }) {
+export default async function InscripcionPage({
+  params, searchParams,
+}: { params: Promise<{ complex: string }>; searchParams: Promise<{ torneo?: string }> }) {
   const { complex: slug } = await params;
+  const { torneo } = await searchParams;
   const complex = await db.complex.findUnique({ where: { slug } });
   if (!complex) notFound();
   const cats = await db.category.findMany({
-    where: { status: "REGISTRATION", tournament: { complexId: complex.id, registrationOpen: true } },
+    where: {
+      status: "REGISTRATION",
+      tournament: { complexId: complex.id, registrationOpen: true, ...(torneo ? { id: torneo } : {}) },
+    },
     include: { tournament: true },
     orderBy: [{ tournament: { startDate: "asc" } }, { name: "asc" }],
   });
@@ -18,6 +25,9 @@ export default async function InscripcionPage({ params }: { params: Promise<{ co
     <>
       <Header complex={complex} />
       <main className="mx-auto max-w-xl px-4 py-5">
+        {torneo && cats[0] && (
+          <Link href={`/${slug}/torneo/${torneo}`} className="text-sm text-neutral-500">‹ {cats[0].tournament.name}</Link>
+        )}
         <h1 className="h1">Inscripción</h1>
         <p className="mb-4 text-sm text-neutral-600">Completá los datos de los dos jugadores. Te contactamos por WhatsApp con los horarios.</p>
         {cats.length === 0 ? (

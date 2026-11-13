@@ -47,8 +47,7 @@ export default async function Torneos({ params }: { params: Promise<{ complex: s
           <p className="text-xs font-semibold uppercase tracking-[.25em]" style={{ color: "var(--brand)" }}>{complex.name}</p>
           <h1 className="font-display mt-1 text-5xl font-extrabold uppercase leading-none">Torneos</h1>
           <div className="mt-5 flex flex-wrap gap-2">
-            <Link href={`/${slug}/inscripcion`} className="btn-primary px-5 py-3 text-base">Inscribirme</Link>
-            <Link href={`/${slug}/ranking`} className="btn-outline-light px-5 py-3 text-base">Ranking {new Date().getFullYear()}</Link>
+            <Link href={`/${slug}/ranking`} className="btn-primary px-5 py-3 text-base">🏆 Ranking {new Date().getFullYear()}</Link>
           </div>
         </div>
       </section>

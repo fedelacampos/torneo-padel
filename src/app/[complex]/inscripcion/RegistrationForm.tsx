@@ -24,14 +24,16 @@ export function RegistrationForm({ slug, categories }: { slug: string; categorie
     <form ref={ref} onSubmit={onSubmit} className="space-y-4">
       <input type="hidden" name="slug" value={slug} />
       <div className="card p-4">
-        <label className="label">Torneo y categoría *</label>
+        <label className="label">{tournaments.length === 1 ? `Categoría · ${tournaments[0]}` : "Torneo y categoría"} *</label>
         <select name="categoryId" className="input" required defaultValue="">
           <option value="" disabled>Elegí la categoría</option>
-          {tournaments.map((t) => (
-            <optgroup key={t} label={t}>
-              {categories.filter((c) => c.tournament === t).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </optgroup>
-          ))}
+          {tournaments.length === 1
+            ? categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)
+            : tournaments.map((t) => (
+              <optgroup key={t} label={t}>
+                {categories.filter((c) => c.tournament === t).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </optgroup>
+            ))}
         </select>
       </div>
       <PlayerFields n={1} />
