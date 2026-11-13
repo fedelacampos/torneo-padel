@@ -58,9 +58,9 @@ export async function CategoriesTab({ slug, tournament: t }: { slug: string; tou
           <div key={c.id} className="card p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-lg font-bold">{c.name}</h3>
-              <span className="chip bg-slate-100 text-slate-700">{STATUS_LABEL[c.status]}</span>
+              <span className="chip bg-neutral-100 text-neutral-700">{STATUS_LABEL[c.status]}</span>
             </div>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-neutral-500">
               {confirmed} parejas confirmadas{pendingP > 0 && <> · <b className="text-amber-700">{pendingP} por confirmar</b></>}
             </p>
 
@@ -77,7 +77,7 @@ export async function CategoriesTab({ slug, tournament: t }: { slug: string; tou
             </div>
 
             <details className="mt-3">
-              <summary className="cursor-pointer text-sm font-semibold text-slate-600">Editar categoría</summary>
+              <summary className="cursor-pointer text-sm font-semibold text-neutral-600">Editar categoría</summary>
               <ActionForm action={updateCategory} className="mt-3 grid gap-3 sm:grid-cols-2" submit="Guardar">
                 {catHidden}
                 <div className="sm:col-span-2"><label className="label">Nombre</label><input name="name" defaultValue={c.name} className="input" /></div>

@@ -7,9 +7,12 @@ export function ZoneTable({ title, rows, pairs, qualify }: { title: string; rows
   const byId = new Map(pairs.map((p) => [p.id, p]));
   return (
     <div className="card overflow-hidden">
-      <div className="bg-slate-800 px-3 py-2 text-sm font-bold text-white">{title}</div>
+      <div className="font-display flex items-center justify-between bg-[var(--ink)] px-3 py-2 text-lg font-bold uppercase tracking-wide" style={{ color: "var(--brand)" }}>
+        {title}
+        {qualify > 0 && <span className="text-[10px] font-semibold normal-case tracking-normal text-white/60">Clasifican {qualify}</span>}
+      </div>
       <table className="w-full text-sm">
-        <thead className="text-xs text-slate-500">
+        <thead className="text-[11px] uppercase tracking-wide text-neutral-500">
           <tr>
             <th className="px-3 py-1.5 text-left">Pareja</th>
             <th className="w-8">PJ</th>
@@ -20,9 +23,9 @@ export function ZoneTable({ title, rows, pairs, qualify }: { title: string; rows
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={r.pairId} className={`border-t border-slate-100 ${i < qualify ? "bg-emerald-50" : ""}`}>
+            <tr key={r.pairId} className={`border-t border-neutral-100 ${i < qualify ? "row-q" : ""}`}>
               <td className="px-3 py-2">
-                <span className="mr-1.5 text-xs text-slate-400">{i + 1}</span>
+                <span className="font-display mr-2 inline-block w-3 text-sm font-bold text-neutral-400">{i + 1}</span>
                 {pairName(byId.get(r.pairId))}
               </td>
               <td className="text-center tabular-nums">{r.played}</td>

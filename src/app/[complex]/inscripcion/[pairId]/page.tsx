@@ -9,7 +9,7 @@ import { CopyButton } from "@/components/CopyButton";
 export const dynamic = "force-dynamic";
 
 const PAY_LABEL: Record<string, [string, string]> = {
-  PENDIENTE: ["Pendiente", "bg-slate-100 text-slate-700"],
+  PENDIENTE: ["Pendiente", "bg-neutral-100 text-neutral-700"],
   INFORMADO: ["Informado, a confirmar", "bg-amber-100 text-amber-800"],
   PAGADO: ["Pagado", "bg-emerald-100 text-emerald-800"],
 };
@@ -40,9 +40,9 @@ export default async function InscripcionOk({
         <div className="card p-5 text-center">
           <div className="mx-auto mb-2 grid h-12 w-12 place-items-center rounded-full bg-emerald-100 text-2xl">✓</div>
           <h1 className="h1">¡Inscripción recibida!</h1>
-          <p className="mt-1 text-slate-600">{t.name} · {pair.category.name}</p>
+          <p className="mt-1 text-neutral-600">{t.name} · {pair.category.name}</p>
           <p className="mt-2 font-semibold">{pair.player1.fullName} / {pair.player2.fullName}</p>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-neutral-500">
             {pair.status === "CONFIRMED" ? "Su lugar está confirmado." : "El organizador va a confirmar su lugar."} Guardá esta página para ver el estado del pago.
           </p>
         </div>
@@ -66,7 +66,7 @@ export default async function InscripcionOk({
                   <a href={complex.mpLink} target="_blank" rel="noopener noreferrer" className="btn-mp w-full py-3.5 text-base">Pagar con Mercado Pago</a>
                 )}
                 {complex.mpAlias && (
-                  <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3 text-sm">
+                  <div className="flex items-center justify-between rounded-xl bg-neutral-50 p-3 text-sm">
                     <span>Alias: <b>{complex.mpAlias}</b></span>
                     <CopyButton text={complex.mpAlias} />
                   </div>

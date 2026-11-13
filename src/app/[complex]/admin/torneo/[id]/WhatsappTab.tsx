@@ -17,12 +17,12 @@ export async function WhatsappTab({ complex, tournamentId }: { complex: { id: st
     <div className="space-y-6">
       <section>
         <h2 className="h2">Recordatorios (próximas 2 horas)</h2>
-        <p className="mb-2 text-sm text-slate-500">
+        <p className="mb-2 text-sm text-neutral-500">
           {auto
             ? "El envío automático está activo: cada jugador recibe un recordatorio 1 hora antes de su partido."
             : "Tocá cada botón para mandar el recordatorio. Para que salgan solos 1 hora antes, se configura la API de WhatsApp Business (ver README)."}
         </p>
-        {soon.length === 0 && <p className="card p-3 text-sm text-slate-500">No hay partidos en las próximas 2 horas.</p>}
+        {soon.length === 0 && <p className="card p-3 text-sm text-neutral-500">No hay partidos en las próximas 2 horas.</p>}
         <div className="space-y-2">
           {soon.map((m) => (
             <div key={m.id} className="card p-3">
@@ -45,14 +45,14 @@ export async function WhatsappTab({ complex, tournamentId }: { complex: { id: st
 
       <section>
         <h2 className="h2">Enviar horarios a cada jugador</h2>
-        <p className="mb-2 text-sm text-slate-500">Se arma el mensaje con todos los partidos que tienen día y hora asignados. Tocá “Enviar” y WhatsApp se abre con el texto listo.</p>
-        {players.length === 0 && <p className="card p-3 text-sm text-slate-500">Asigná día y hora a los partidos (pestaña Partidos) para poder enviarlos.</p>}
-        <div className="card divide-y divide-slate-100">
+        <p className="mb-2 text-sm text-neutral-500">Se arma el mensaje con todos los partidos que tienen día y hora asignados. Tocá “Enviar” y WhatsApp se abre con el texto listo.</p>
+        {players.length === 0 && <p className="card p-3 text-sm text-neutral-500">Asigná día y hora a los partidos (pestaña Partidos) para poder enviarlos.</p>}
+        <div className="card divide-y divide-neutral-100">
           {players.map(({ player, items }) => (
             <div key={player.id} className="flex items-start justify-between gap-3 p-3">
               <div className="min-w-0">
                 <p className="text-sm font-medium">{player.fullName}</p>
-                <p className="whitespace-pre-line text-xs text-slate-500">{items.join("\n")}</p>
+                <p className="whitespace-pre-line text-xs text-neutral-500">{items.join("\n")}</p>
               </div>
               <WaButton id={`sch-${tournamentId}-${player.id}-${version(items)}`}
                 href={waLink(player.phone, scheduleMessage({ name: player.fullName, complex: complex.name, tournament: t.name, items, url }))} />

@@ -19,7 +19,7 @@ export default async function Ajustes({ params }: { params: Promise<{ complex: s
             <h2 className="h2 sm:col-span-2">Marca</h2>
             <div className="sm:col-span-2"><label className="label">Nombre del complejo</label><input name="name" defaultValue={c.name} className="input" /></div>
             <div><label className="label">Logo (URL de imagen)</label><input name="logoUrl" defaultValue={c.logoUrl ?? ""} className="input" /></div>
-            <div><label className="label">Color principal</label><input name="primaryColor" type="color" defaultValue={c.primaryColor} className="h-11 w-full rounded-xl border border-slate-300" /></div>
+            <div><label className="label">Color principal</label><input name="primaryColor" type="color" defaultValue={c.primaryColor} className="h-11 w-full rounded-xl border border-neutral-300" /></div>
           </div>
           <div className="card grid gap-3 p-4">
             <h2 className="h2">Cobros y contacto</h2>

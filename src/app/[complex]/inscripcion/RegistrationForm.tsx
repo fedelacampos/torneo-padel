@@ -42,7 +42,7 @@ export function RegistrationForm({ slug, categories }: { slug: string; categorie
           <textarea name="availability" rows={3} className="input" placeholder="Ej: jueves y viernes después de las 19 hs. No podemos el viernes antes de las 21." />
         </div>
         <label className="flex items-start gap-3 rounded-xl bg-amber-50 p-3 text-sm">
-          <input type="checkbox" name="weekend" className="mt-0.5 h-5 w-5 accent-[var(--brand)]" />
+          <input type="checkbox" name="weekend" className="mt-0.5 h-5 w-5 accent-black" />
           <span>Confirmamos que estamos disponibles <b>sábado y domingo</b>, cuando se juegan las instancias finales.</span>
         </label>
       </div>

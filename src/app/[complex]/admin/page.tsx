@@ -36,10 +36,10 @@ export default async function AdminHome({ params }: { params: Promise<{ complex:
           <h2 className="h2 mb-3">Torneos</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {tournaments.map((t) => (
-              <Link key={t.id} href={`/${slug}/admin/torneo/${t.id}`} className="card block p-4 hover:ring-[var(--brand)]">
+              <Link key={t.id} href={`/${slug}/admin/torneo/${t.id}`} className="card block p-4 hover:ring-black/30">
                 <p className="font-bold">{t.name}</p>
-                <p className="text-sm text-slate-500">{fmtDate(t.startDate)} al {fmtDate(t.endDate)}</p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="text-sm text-neutral-500">{fmtDate(t.startDate)} al {fmtDate(t.endDate)}</p>
+                <p className="mt-1 text-xs text-neutral-500">
                   {t.categories.length} categorías · {t.categories.reduce((n, c) => n + c._count.pairs, 0)} parejas
                 </p>
               </Link>

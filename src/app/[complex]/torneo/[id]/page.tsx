@@ -27,18 +27,22 @@ export default async function TournamentPage({
     <>
       <Header complex={t.complex} />
       <AutoRefresh />
+      <section className="hero">
+        <div className="relative z-10 mx-auto max-w-5xl px-4 py-7">
+          <p className="text-xs font-semibold uppercase tracking-[.25em]" style={{ color: "var(--brand)" }}>
+            {fmtDate(t.startDate)} al {fmtDate(t.endDate)}
+          </p>
+          <h1 className="font-display mt-1 text-4xl font-extrabold uppercase leading-none">{t.name}</h1>
+        </div>
+      </section>
       <main className="mx-auto max-w-5xl px-4 py-5">
-        <h1 className="h1">{t.name}</h1>
-        <p className="text-sm text-slate-500">{fmtDate(t.startDate)} al {fmtDate(t.endDate)}</p>
-
-        <nav className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1">
+        <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
           {t.categories.map((c) => (
             <Link
               key={c.id}
               href={`?cat=${c.id}`}
               scroll={false}
-              className={`chip shrink-0 px-4 py-2 text-sm ${c.id === selected?.id ? "text-white" : "bg-white ring-1 ring-slate-200"}`}
-              style={c.id === selected?.id ? { background: "var(--brand)" } : undefined}
+              className={`shrink-0 ${c.id === selected?.id ? "chip-on" : "chip-off"}`}
             >
               {c.name}
             </Link>
@@ -47,13 +51,13 @@ export default async function TournamentPage({
 
         {cat && (
           <div className="mt-4">
-            <p className="mb-4 text-xs text-slate-500">
+            <p className="mb-5 text-xs text-neutral-500">
               {FORMAT_LABEL[cat.format]} · {MATCH_FORMAT_LABEL[cat.matchFormat as MatchFormat]} · <b>{STATUS_LABEL[cat.status]}</b>
             </p>
             <CategoryView cat={cat} />
           </div>
         )}
-        <p className="mt-8 text-center text-xs text-slate-400">Los resultados se actualizan solos.</p>
+        <p className="mt-10 flex items-center justify-center gap-2 text-xs text-neutral-400"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />Resultados en vivo: se actualizan solos</p>
       </main>
     </>
   );

@@ -37,31 +37,37 @@ export default async function RankingPage({
         <nav className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1">
           {cats.map((c) => (
             <Link key={c} href={`?year=${year}&cat=${encodeURIComponent(c)}`}
-              className={`chip shrink-0 px-4 py-2 text-sm ${c === cat ? "text-white" : "bg-white ring-1 ring-slate-200"}`}
-              style={c === cat ? { background: "var(--brand)" } : undefined}>{c}</Link>
+              className={`shrink-0 ${c === cat ? "chip-on" : "chip-off"}`}>{c}</Link>
           ))}
         </nav>
 
         {rows.length === 0 ? (
-          <p className="mt-6 text-slate-500">Todavía no hay torneos finalizados en {year}.</p>
+          <p className="mt-6 text-neutral-500">Todavía no hay torneos finalizados en {year}.</p>
         ) : (
           <div className="card mt-4 overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-slate-800 text-xs text-white">
+              <thead className="bg-[var(--ink)] text-xs uppercase tracking-wide text-white">
                 <tr><th className="w-10 py-2">#</th><th className="text-left">Jugador</th><th className="w-14">Torneos</th><th className="w-16 pr-3 text-right">Puntos</th></tr>
               </thead>
               <tbody>
-                {rows.map((r, i) => (
-                  <tr key={r.playerId} className="border-t border-slate-100">
-                    <td className="py-2.5 text-center font-bold text-slate-400">{i + 1}</td>
+                {rows.map((r) => {
+                  // Empatados en puntos comparten posición (1, 1, 3...)
+                  const i = rows.findIndex((x) => x.points === r.points);
+                  return (
+                  <tr key={r.playerId} className="border-t border-neutral-100">
+                    <td className="py-2.5 text-center">
+                      <span className={`font-display inline-grid h-8 w-8 place-items-center rounded-full text-base font-bold ${i === 0 ? "" : i === 1 ? "bg-neutral-300 text-neutral-900" : i === 2 ? "bg-amber-700 text-white" : "text-neutral-400"}`}
+                        style={i === 0 ? { background: "var(--brand)", color: "var(--brand-ink)" } : undefined}>{i + 1}</span>
+                    </td>
                     <td>
                       <div className="font-medium">{r.name}</div>
-                      {r.instagram && <div className="text-xs text-slate-500">{r.instagram}</div>}
+                      {r.instagram && <div className="text-xs text-neutral-500">{r.instagram}</div>}
                     </td>
                     <td className="text-center tabular-nums">{r.tournaments}</td>
-                    <td className="pr-3 text-right text-base font-bold tabular-nums">{r.points}</td>
+                    <td className="font-display pr-3 text-right text-2xl font-bold tabular-nums">{r.points}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -71,10 +77,10 @@ export default async function RankingPage({
           <summary className="cursor-pointer font-semibold">¿Cómo se suman los puntos?</summary>
           <ul className="mt-2 grid grid-cols-2 gap-1">
             {(Object.keys(POINTS_LABEL) as (keyof RankingPoints)[]).map((k) => (
-              <li key={k} className="flex justify-between rounded bg-slate-50 px-2 py-1"><span>{POINTS_LABEL[k]}</span><b>{pts[k]}</b></li>
+              <li key={k} className="flex justify-between rounded bg-neutral-50 px-2 py-1"><span>{POINTS_LABEL[k]}</span><b>{pts[k]}</b></li>
             ))}
           </ul>
-          <p className="mt-2 text-xs text-slate-500">Cada jugador suma los puntos de la instancia a la que llegó con su pareja.</p>
+          <p className="mt-2 text-xs text-neutral-500">Cada jugador suma los puntos de la instancia a la que llegó con su pareja.</p>
         </details>
       </main>
     </>

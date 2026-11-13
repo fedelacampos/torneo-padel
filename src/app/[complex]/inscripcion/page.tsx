@@ -19,9 +19,9 @@ export default async function InscripcionPage({ params }: { params: Promise<{ co
       <Header complex={complex} />
       <main className="mx-auto max-w-xl px-4 py-5">
         <h1 className="h1">Inscripción</h1>
-        <p className="mb-4 text-sm text-slate-600">Completá los datos de los dos jugadores. Te contactamos por WhatsApp con los horarios.</p>
+        <p className="mb-4 text-sm text-neutral-600">Completá los datos de los dos jugadores. Te contactamos por WhatsApp con los horarios.</p>
         {cats.length === 0 ? (
-          <p className="card p-4 text-slate-600">No hay inscripciones abiertas en este momento.</p>
+          <p className="card p-4 text-neutral-600">No hay inscripciones abiertas en este momento.</p>
         ) : (
           <RegistrationForm slug={slug} categories={cats.map((c) => ({ id: c.id, name: c.name, tournament: c.tournament.name }))} />
         )}

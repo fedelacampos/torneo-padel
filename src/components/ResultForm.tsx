@@ -51,7 +51,7 @@ export function ResultForm({
       inputMode="numeric"
       value={rows[i][k]}
       onChange={(e) => set(i, k, e.target.value)}
-      className={`h-11 w-11 rounded-lg border border-slate-300 text-center text-lg font-semibold tabular-nums outline-none focus:border-[var(--brand)] ${cls}`}
+      className={`h-11 w-11 rounded-lg border border-neutral-300 text-center text-lg font-semibold tabular-nums outline-none focus:border-[var(--ink)] focus:ring-2 focus:ring-black/10 ${cls}`}
       aria-label={`Set ${i + 1} ${k}`}
     />
   );
@@ -68,7 +68,7 @@ export function ResultForm({
         <div className="overflow-x-auto">
           <table className="text-sm">
             <thead>
-              <tr className="text-xs text-slate-500">
+              <tr className="text-xs text-neutral-500">
                 <th />
                 {Array.from({ length: visible }, (_, i) => (
                   <th key={i} className="px-1 pb-1 font-medium">{i === 2 && superThird ? "Super TB" : `Set ${i + 1}`}</th>
@@ -83,7 +83,7 @@ export function ResultForm({
                     <td key={i} className="px-1 py-0.5">
                       <div className="flex items-center gap-1">
                         {input(i, side, i === 2 && superThird ? "bg-ball/40" : "")}
-                        {!(i === 2 && superThird) && isTb(rows[i]) && input(i, side === "a" ? "tbA" : "tbB", "h-9 w-9 text-sm bg-slate-50")}
+                        {!(i === 2 && superThird) && isTb(rows[i]) && input(i, side === "a" ? "tbA" : "tbB", "h-9 w-9 text-sm bg-neutral-50")}
                       </div>
                     </td>
                   ))}
@@ -92,15 +92,15 @@ export function ResultForm({
             </tbody>
           </table>
           {rows.slice(0, visible).some((r, i) => isTb(r) && !(i === 2 && superThird)) && (
-            <p className="mt-1 text-xs text-slate-500">Casilla chica: puntos del tiebreak (ej. 7-5).</p>
+            <p className="mt-1 text-xs text-neutral-500">Casilla chica: puntos del tiebreak (ej. 7-5).</p>
           )}
-          {needThird && superThird && <p className="mt-1 text-xs text-slate-500">Supertiebreak a 10 con diferencia de 2 (10-8, 11-9...).</p>}
+          {needThird && superThird && <p className="mt-1 text-xs text-neutral-500">Supertiebreak a 10 con diferencia de 2 (10-8, 11-9...).</p>}
         </div>
       )}
 
       <label className="flex items-center gap-2 text-sm">
-        <span className="text-slate-600">W.O. (no se presentó):</span>
-        <select value={wo} onChange={(e) => setWo(e.target.value as "" | "A" | "B")} className="rounded-lg border border-slate-300 px-2 py-1">
+        <span className="text-neutral-600">W.O. (no se presentó):</span>
+        <select value={wo} onChange={(e) => setWo(e.target.value as "" | "A" | "B")} className="rounded-lg border border-neutral-300 px-2 py-1">
           <option value="">No</option>
           <option value="A">Gana {nameA}</option>
           <option value="B">Gana {nameB}</option>

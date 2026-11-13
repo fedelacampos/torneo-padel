@@ -3,7 +3,7 @@ import { money } from "@/lib/format";
 import { setPayment } from "../../actions";
 
 const CHIP: Record<string, string> = {
-  PENDIENTE: "bg-slate-100 text-slate-700",
+  PENDIENTE: "bg-neutral-100 text-neutral-700",
   INFORMADO: "bg-amber-100 text-amber-800",
   PAGADO: "bg-emerald-100 text-emerald-800",
 };
@@ -21,15 +21,15 @@ export async function PaymentsTab({ slug, tournamentId, fee }: { slug: string; t
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-3 gap-2 text-center">
-        <div className="card p-3"><p className="text-2xl font-bold text-emerald-700">{paid}</p><p className="text-xs text-slate-500">pagaron · {money(paid * fee)}</p></div>
-        <div className="card p-3"><p className="text-2xl font-bold text-amber-700">{informed}</p><p className="text-xs text-slate-500">informaron MP</p></div>
-        <div className="card p-3"><p className="text-2xl font-bold">{all.length - paid - informed}</p><p className="text-xs text-slate-500">deben · {money((all.length - paid) * fee)}</p></div>
+        <div className="card p-3"><p className="text-2xl font-bold text-emerald-700">{paid}</p><p className="text-xs text-neutral-500">pagaron · {money(paid * fee)}</p></div>
+        <div className="card p-3"><p className="text-2xl font-bold text-amber-700">{informed}</p><p className="text-xs text-neutral-500">informaron MP</p></div>
+        <div className="card p-3"><p className="text-2xl font-bold">{all.length - paid - informed}</p><p className="text-xs text-neutral-500">deben · {money((all.length - paid) * fee)}</p></div>
       </div>
 
       {cats.map((c) => (
         <section key={c.id}>
           <h2 className="h2 mb-2">{c.name}</h2>
-          <div className="card divide-y divide-slate-100">
+          <div className="card divide-y divide-neutral-100">
             {c.pairs.flatMap((p) =>
               ([1, 2] as const).map((n) => {
                 const pl = n === 1 ? p.player1 : p.player2;
@@ -57,7 +57,7 @@ export async function PaymentsTab({ slug, tournamentId, fee }: { slug: string; t
                 );
               }),
             )}
-            {c.pairs.length === 0 && <p className="p-3 text-sm text-slate-500">Sin parejas.</p>}
+            {c.pairs.length === 0 && <p className="p-3 text-sm text-neutral-500">Sin parejas.</p>}
           </div>
         </section>
       ))}

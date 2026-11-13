@@ -9,7 +9,7 @@ import { clearMatchResult, saveMatchResult, scheduleMatch } from "../../actions"
 
 export function MatchesTab({ slug, cat }: { slug: string; cat: CategoryFull }) {
   if (cat.matches.length === 0)
-    return <p className="card p-4 text-slate-600">Todavía no hay partidos. Hacé el sorteo desde la pestaña <b>Categorías</b>.</p>;
+    return <p className="card p-4 text-neutral-600">Todavía no hay partidos. Hacé el sorteo desde la pestaña <b>Categorías</b>.</p>;
 
   // Grupos: rondas del cuadro primero (lo más reciente arriba), luego zonas / americano.
   const groups: { title: string; matches: CategoryFull["matches"] }[] = [];
@@ -34,8 +34,8 @@ export function MatchesTab({ slug, cat }: { slug: string; cat: CategoryFull }) {
               return (
                 <div key={m.id} className="space-y-0">
                   <MatchCard m={m} />
-                  <details className="-mt-2 rounded-b-2xl bg-white px-3 pb-3 pt-3 ring-1 ring-slate-200" open={!!ready && !m.winnerId && !!m.scheduledAt}>
-                    <summary className="cursor-pointer text-sm font-semibold text-[var(--brand)]">
+                  <details className="-mt-2 rounded-b-2xl bg-white px-3 pb-3 pt-3 ring-1 ring-neutral-200" open={!!ready && !m.winnerId && !!m.scheduledAt}>
+                    <summary className="cursor-pointer text-sm font-semibold text-neutral-900 underline decoration-[var(--brand)] decoration-[3px] underline-offset-4">
                       {m.winnerId ? "Editar resultado / horario" : ready ? "Cargar resultado / horario" : "Asignar horario"}
                     </summary>
                     <div className="mt-3 space-y-4">

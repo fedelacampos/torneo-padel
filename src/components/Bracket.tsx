@@ -10,7 +10,7 @@ export function Bracket({ matches }: { matches: (MatchView & { round: number; po
       <div className="flex gap-4" style={{ minWidth: rounds.length * 260 }}>
         {rounds.map((r) => (
           <div key={r} className="flex w-64 shrink-0 flex-col">
-            <h3 className="mb-2 text-center text-sm font-bold uppercase tracking-wide text-slate-600">{roundLabel(r)}</h3>
+            <h3 className="font-display mb-3 rounded-lg bg-[var(--ink)] py-1.5 text-center text-sm font-bold uppercase tracking-widest" style={{ color: "var(--brand)" }}>{roundLabel(r)}</h3>
             <div className="flex flex-1 flex-col justify-around gap-3">
               {matches
                 .filter((m) => m.round === r)
