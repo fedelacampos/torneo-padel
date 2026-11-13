@@ -16,13 +16,13 @@ export function Logo({ complex, size = 36 }: { complex: C; size?: number }) {
 
 export function Header({ complex, admin = false }: { complex: C; admin?: boolean }) {
   const base = `/${complex.slug}`;
-  const link = "rounded-lg px-2.5 py-1.5 text-white/80 transition hover:bg-white/10 hover:text-white";
+  const link = "rounded-lg px-2 py-1.5 text-white/80 transition hover:bg-white/10 hover:text-white";
   return (
     <>
       <style>{`:root{--brand:${complex.primaryColor};--brand-ink:${inkFor(complex.primaryColor)}}`}</style>
       <header className="sticky top-0 z-20 bg-[var(--ink)] text-white">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-2.5">
-          <Link href={admin ? `${base}/admin` : base} className="flex min-w-0 items-center gap-2.5">
+          <Link href={admin ? `${base}/admin` : `${base}/inicio`} className="flex min-w-0 items-center gap-2.5">
             <Logo complex={complex} />
             <span className="font-display truncate text-lg font-bold uppercase tracking-wide">{complex.name}</span>
             {admin && <span className="chip-brand">Admin</span>}
@@ -32,8 +32,9 @@ export function Header({ complex, admin = false }: { complex: C; admin?: boolean
               <Link href={base} className={link}>Ver web</Link>
             ) : (
               <>
-                <Link href={`${base}/inscripcion`} className={link}>Inscribirme</Link>
+                <Link href={`${base}/torneos`} className={link}>Torneos</Link>
                 <Link href={`${base}/ranking`} className={link}>Ranking</Link>
+                <Link href={`${base}/restobar`} className={link}>Restobar</Link>
               </>
             )}
           </nav>

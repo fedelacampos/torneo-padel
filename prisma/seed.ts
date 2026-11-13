@@ -70,6 +70,23 @@ export async function seedDemo() {
     data: { slug: "demo", name: "Complejo Demo Pádel", adminPassword: hashPassword("demo1234"), adminWhatsapp: "5491100000000",
       mpLink: "https://www.mercadopago.com.ar", mpAlias: "complejo.demo.mp" },
   });
+  await db.product.createMany({
+    data: [
+      ["Agua mineral 500ml", "Bebidas", 1500, "Con o sin gas"],
+      ["Gatorade 500ml", "Bebidas", 2500, "Varios sabores"],
+      ["Cerveza tirada", "Bebidas", 3500, "Pinta"],
+      ["Gaseosa línea Coca-Cola", "Bebidas", 2200, "500ml"],
+      ["Hamburguesa completa", "Comidas", 9500, "Con papas fritas"],
+      ["Tostado de jamón y queso", "Comidas", 5500, null],
+      ["Picada para 4", "Comidas", 18000, "Fiambres, quesos y pan"],
+      ["Café con medialunas", "Cafetería", 3800, "2 medialunas"],
+      ["Promo post partido", "Promos", 12000, "2 cervezas + papas con cheddar"],
+    ].map(([name, category, price, description], i) => ({
+      complexId: complex.id, name: name as string, category: category as string, price: price as number,
+      description: description as string | null, sortOrder: i,
+    })),
+  });
+
   const day = 864e5;
   const now = Date.now();
 

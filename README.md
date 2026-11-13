@@ -14,6 +14,11 @@ Web y app de celular (PWA) para que los complejos de pádel organicen sus torneo
 - Ranking anual por categoría.
 - Se instala en el celular con "Agregar a pantalla de inicio".
 
+**Estructura de la web de cada complejo**
+- `/<complejo>`: portada con foto de fondo y botón INGRESAR.
+- `/<complejo>/inicio`: menú con Reservá tu cancha (link externo), Mirá tu partido (próximamente), Torneos y Restobar.
+- `/<complejo>/restobar`: tienda con carrito. El pedido se envía por WhatsApp con el detalle y el total, y ofrece pagar por Mercado Pago.
+
 **Para el organizador** (`/<complejo>/admin`)
 - Torneos con varias categorías en simultáneo. Cada categoría tiene su formato:
   - Zonas + eliminación directa (tamaño de zona y clasificados por zona configurables)
@@ -27,7 +32,9 @@ Web y app de celular (PWA) para que los complejos de pádel organicen sus torneo
 - Inscripción manual de parejas y confirmación o rechazo de las que se anotan por la web.
 - Pagos: cada jugador se marca como pagado en efectivo, por transferencia o por Mercado Pago, y se ven los totales.
 - WhatsApp: el mensaje con los horarios de cada jugador y los recordatorios de la próxima hora salen listos para enviar.
-- Ajustes: nombre, logo, color, link de Mercado Pago, alias, WhatsApp del organizador y puntos del ranking.
+- Restobar: productos con foto, precio, categoría y disponibilidad.
+- Ajustes: nombre, logo, foto de portada (se suben desde el celular), color, link de reservas,
+  WhatsApp del organizador y del restobar, Mercado Pago, alias y puntos del ranking.
 
 ## Puntos del ranking (por defecto, editables)
 Perdedor de zona o 32avos: 25 · 16avos: 37 · Octavos: 50 · Cuartos: 75 · Semifinal: 100 · Finalista: 150 · Campeón: 200.

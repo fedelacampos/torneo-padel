@@ -22,12 +22,42 @@ model Complex {
   mpLink        String? // link de pago de Mercado Pago
   mpAlias       String? // alias para transferencias
   adminPassword String // hash
+  coverUrl         String? // foto de portada
+  bookingUrl       String? // link externo para reservar cancha
+  restobarWhatsapp String? // WhatsApp que recibe los pedidos del restobar (si no, adminWhatsapp)
   // Puntos del ranking (JSON). Ver src/lib/ranking.ts para el formato.
   rankingPoints String?
   createdAt     DateTime @default(now())
 
   tournaments Tournament[]
   players     Player[]
+  products    Product[]
+  images      Image[]
+}
+
+// Productos del restobar.
+model Product {
+  id          String   @id @default(cuid())
+  complexId   String
+  complex     Complex  @relation(fields: [complexId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  price       Int // en pesos
+  category    String   @default("Varios")
+  imageUrl    String?
+  available   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+// Imágenes subidas desde el panel (logo, portada, productos). Se guardan en la base.
+model Image {
+  id        String   @id @default(cuid())
+  complexId String
+  complex   Complex  @relation(fields: [complexId], references: [id], onDelete: Cascade)
+  mime      String
+  data      Bytes
+  createdAt DateTime @default(now())
 }
 
 model Tournament {

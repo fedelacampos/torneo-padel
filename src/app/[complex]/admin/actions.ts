@@ -8,6 +8,7 @@ import { readPlayer, registerPair, validatePlayer } from "@/lib/registration";
 import { clearResult, generateDraw, generatePlayoffs, saveResult } from "@/lib/tournament";
 import { DEFAULT_POINTS, type RankingPoints } from "@/lib/ranking";
 import type { SetScore } from "@/lib/scoring";
+import { imageFromForm } from "@/lib/images";
 
 type State = { error?: string; ok?: string } | undefined;
 const s = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
@@ -63,11 +64,17 @@ export async function saveSettings(_: State, fd: FormData): Promise<State> {
   }
   const pw = s(fd, "newPassword");
   if (pw && pw.length < 6) return { error: "La contraseña nueva debe tener al menos 6 caracteres." };
+  const logoUrl = await imageFromForm(fd, "logoUrl", c.id);
+  const coverUrl = await imageFromForm(fd, "coverUrl", c.id);
+  if (logoUrl === undefined || coverUrl === undefined) return { error: "No se pudo leer la imagen. Probá con otra foto (JPG o PNG)." };
   await db.complex.update({
     where: { id: c.id },
     data: {
       name: s(fd, "name") || c.name,
-      logoUrl: s(fd, "logoUrl") || null,
+      logoUrl,
+      coverUrl,
+      bookingUrl: s(fd, "bookingUrl") || null,
+      restobarWhatsapp: s(fd, "restobarWhatsapp").replace(/\D/g, "") || null,
       primaryColor: /^#[0-9a-f]{6}$/i.test(s(fd, "primaryColor")) ? s(fd, "primaryColor") : c.primaryColor,
       adminWhatsapp: s(fd, "adminWhatsapp").replace(/\D/g, "") || null,
       mpLink: s(fd, "mpLink") || null,
@@ -279,4 +286,55 @@ export async function scheduleMatch(_: State, fd: FormData): Promise<State> {
   });
   revalidatePath(`/${c.slug}`, "layout");
   return { ok: "Horario guardado." };
+}
+
+/* ---------- Restobar ---------- */
+
+async function ownProduct(complexId: string, productId: string) {
+  const p = await db.product.findUnique({ where: { id: productId } });
+  if (!p || p.complexId !== complexId) throw new Error("No autorizado");
+  return p;
+}
+
+function productData(fd: FormData) {
+  return {
+    name: s(fd, "name"),
+    description: s(fd, "description") || null,
+    price: Math.max(0, Math.round(Number(s(fd, "price").replace(/[^\d]/g, "")) || 0)),
+    category: s(fd, "category") || "Varios",
+    available: fd.get("available") === "on",
+  };
+}
+
+export async function saveProduct(_: State, fd: FormData): Promise<State> {
+  const c = await admin(fd);
+  const data = productData(fd);
+  if (!data.name) return { error: "Poné el nombre del producto." };
+  if (!data.price) return { error: "Poné el precio." };
+  const imageUrl = await imageFromForm(fd, "imageUrl", c.id);
+  if (imageUrl === undefined) return { error: "No se pudo leer la foto. Probá con otra (JPG o PNG)." };
+  const id = s(fd, "productId");
+  if (id) {
+    await ownProduct(c.id, id);
+    await db.product.update({ where: { id }, data: { ...data, imageUrl } });
+  } else {
+    const last = await db.product.aggregate({ where: { complexId: c.id }, _max: { sortOrder: true } });
+    await db.product.create({ data: { ...data, imageUrl, complexId: c.id, sortOrder: (last._max.sortOrder ?? 0) + 1 } });
+  }
+  revalidatePath(`/${c.slug}`, "layout");
+  return { ok: id ? "Producto actualizado." : "Producto agregado." };
+}
+
+export async function toggleProduct(fd: FormData) {
+  const c = await admin(fd);
+  const p = await ownProduct(c.id, s(fd, "productId"));
+  await db.product.update({ where: { id: p.id }, data: { available: !p.available } });
+  revalidatePath(`/${c.slug}`, "layout");
+}
+
+export async function deleteProduct(fd: FormData) {
+  const c = await admin(fd);
+  const p = await ownProduct(c.id, s(fd, "productId"));
+  await db.product.delete({ where: { id: p.id } });
+  revalidatePath(`/${c.slug}`, "layout");
 }
