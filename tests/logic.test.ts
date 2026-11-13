@@ -93,3 +93,19 @@ describe("ranking", () => {
     expect(pts.get("e")).toBe(25);
   });
 });
+
+import { fillMessage, suggestSuperior, DEFAULT_REJECT } from "@/lib/messages";
+describe("mensajes", () => {
+  it("categoría superior", () => {
+    expect(suggestSuperior("5ta Caballeros", ["4ta Caballeros", "5ta Caballeros"])).toBe("4ta Caballeros");
+    expect(suggestSuperior("7ma Damas", [])).toBe("6ta Damas");
+    expect(suggestSuperior("Mixto", [])).toBe("");
+  });
+  it("completa el mensaje", () => {
+    const t = fillMessage(DEFAULT_REJECT, { nombre: "Sofía", categoria: "7ma Damas", superior: "6ta Damas" });
+    expect(t).toContain("¡Hola Sofía!");
+    expect(t).toContain("anotarte en 7ma Damas");
+    expect(t).toContain("participes en 6ta Damas");
+    expect(t).not.toContain("[");
+  });
+});

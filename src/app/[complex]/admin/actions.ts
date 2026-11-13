@@ -45,7 +45,9 @@ export async function login(_: State, fd: FormData): Promise<State> {
   const complex = await db.complex.findUnique({ where: { slug: s(fd, "slug") } });
   if (!complex || !checkPassword(s(fd, "password"), complex.adminPassword)) return { error: "Contraseña incorrecta." };
   await setSession(complex.id);
-  redirect(`/${complex.slug}/admin`);
+  // Volver a la página que pidió el login (ej. el link de confirmar una inscripción).
+  const next = s(fd, "next");
+  redirect(next.startsWith(`/${complex.slug}/admin`) ? next : `/${complex.slug}/admin`);
 }
 
 export async function logout(fd: FormData) {
@@ -75,6 +77,8 @@ export async function saveSettings(_: State, fd: FormData): Promise<State> {
       coverUrl,
       bookingUrl: s(fd, "bookingUrl") || null,
       location: s(fd, "location") || null,
+      welcomeMessage: s(fd, "welcomeMessage") || null,
+      rejectMessage: s(fd, "rejectMessage") || null,
       restobarWhatsapp: s(fd, "restobarWhatsapp").replace(/\D/g, "") || null,
       primaryColor: /^#[0-9a-f]{6}$/i.test(s(fd, "primaryColor")) ? s(fd, "primaryColor") : c.primaryColor,
       adminWhatsapp: s(fd, "adminWhatsapp").replace(/\D/g, "") || null,
@@ -347,4 +351,16 @@ export async function deleteProduct(fd: FormData) {
   const p = await ownProduct(c.id, s(fd, "productId"));
   await db.product.delete({ where: { id: p.id } });
   revalidatePath(`/${c.slug}`, "layout");
+}
+
+/** Confirmar / cancelar una inscripción desde la pantalla de revisión. */
+export async function decidePair(fd: FormData) {
+  const c = await admin(fd);
+  const p = await ownPair(c.id, s(fd, "pairId"));
+  const decision = s(fd, "decision");
+  if (!["PENDING", "CONFIRMED", "REJECTED"].includes(decision)) return;
+  await db.pair.update({ where: { id: p.id }, data: { status: decision } });
+  revalidatePath(`/${c.slug}`, "layout");
+  const sup = s(fd, "superior");
+  redirect(`/${c.slug}/admin/inscripcion/${p.id}${decision === "REJECTED" && sup ? `?sup=${encodeURIComponent(sup)}` : ""}`);
 }

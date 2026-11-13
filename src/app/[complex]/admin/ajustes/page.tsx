@@ -5,6 +5,7 @@ import { ActionForm } from "@/components/ActionForm";
 import { ImageUpload } from "@/components/ImageUpload";
 import { saveSettings } from "../actions";
 import { parsePoints, POINTS_LABEL, type RankingPoints } from "@/lib/ranking";
+import { DEFAULT_REJECT, DEFAULT_WELCOME, PLACEHOLDERS } from "@/lib/messages";
 
 export default async function Ajustes({ params }: { params: Promise<{ complex: string }> }) {
   const { complex: slug } = await params;
@@ -38,6 +39,12 @@ export default async function Ajustes({ params }: { params: Promise<{ complex: s
             <h2 className="h2">Cobros</h2>
             <div><label className="label">Link de pago de Mercado Pago</label><input name="mpLink" defaultValue={c.mpLink ?? ""} className="input" placeholder="https://mpago.la/..." /></div>
             <div><label className="label">Alias para transferencias</label><input name="mpAlias" defaultValue={c.mpAlias ?? ""} className="input" placeholder="complejo.padel.mp" /></div>
+          </div>
+          <div className="card grid gap-3 p-4">
+            <h2 className="h2">Mensajes de inscripción</h2>
+            <p className="text-xs text-neutral-500">Podés usar: {PLACEHOLDERS}</p>
+            <div><label className="label">Al confirmar una inscripción</label><textarea name="welcomeMessage" rows={2} defaultValue={c.welcomeMessage || DEFAULT_WELCOME} className="input" /></div>
+            <div><label className="label">Al cancelar por categoría</label><textarea name="rejectMessage" rows={6} defaultValue={c.rejectMessage || DEFAULT_REJECT} className="input" /></div>
           </div>
           <div className="card p-4">
             <h2 className="h2 mb-3">Puntos del ranking</h2>

@@ -47,10 +47,10 @@ export async function sessionComplexId(): Promise<string | null> {
 }
 
 /** Devuelve el complejo si el usuario es su administrador; si no, lo manda al login. */
-export async function requireAdmin(slug: string) {
+export async function requireAdmin(slug: string, next?: string) {
   const complex = await db.complex.findUnique({ where: { slug } });
   if (!complex) redirect("/");
   const id = await sessionComplexId();
-  if (id !== complex.id) redirect(`/${slug}/admin/login`);
+  if (id !== complex.id) redirect(`/${slug}/admin/login${next ? `?next=${encodeURIComponent(next)}` : ""}`);
   return complex;
 }

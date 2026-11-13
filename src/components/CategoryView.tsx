@@ -6,21 +6,10 @@ import { Bracket } from "./Bracket";
 /** Vista pública de una categoría: zonas con tablas, partidos y cuadro. */
 export function CategoryView({ cat }: { cat: CategoryFull }) {
   const ko = cat.matches.filter((m) => m.stage === "KO");
-  const confirmed = cat.pairs.filter((p) => p.status === "CONFIRMED");
 
-  if (cat.status === "REGISTRATION") {
-    return (
-      <div className="card p-4">
-        <h2 className="h2">Parejas confirmadas ({confirmed.length})</h2>
-        <p className="mt-1 text-sm text-neutral-600">El sorteo de zonas y horarios se publica antes del torneo.</p>
-        <ul className="mt-3 grid gap-1 text-sm sm:grid-cols-2">
-          {confirmed.map((p) => (
-            <li key={p.id} className="rounded-lg bg-neutral-50 px-3 py-1.5">{p.player1.fullName} / {p.player2.fullName}</li>
-          ))}
-        </ul>
-      </div>
-    );
-  }
+  // Durante la inscripción la lista de parejas es solo para el organizador.
+  if (cat.status === "REGISTRATION") return null;
+
 
   return (
     <div className="space-y-6">

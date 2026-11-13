@@ -5,6 +5,8 @@ import { money } from "@/lib/format";
 import { waLink } from "@/lib/whatsapp";
 import { reportPayment } from "../actions";
 import { CopyButton } from "@/components/CopyButton";
+import { organizerMessage } from "@/lib/messages";
+import { absoluteUrl } from "@/lib/url";
 
 export const dynamic = "force-dynamic";
 
@@ -31,21 +33,36 @@ export default async function InscripcionOk({
     { n: "2", p: pair.player2, status: pair.pay2Status },
   ];
   const anyPending = players.some((x) => x.status === "PENDIENTE");
+  const review = `/${slug}/admin/inscripcion/${pair.id}`;
+  const solicitud = organizerMessage({
+    tournament: t.name, category: pair.category.name, p1: pair.player1, p2: pair.player2, availability: pair.availability,
+    confirmUrl: await absoluteUrl(`${review}?a=ok`), rejectUrl: await absoluteUrl(`${review}?a=no`),
+  });
   const notifyText = `Hola! Informo el pago de la inscripción al torneo "${t.name}" (${pair.category.name}) - ${pair.player1.fullName} / ${pair.player2.fullName}.`;
 
   return (
     <>
       <Header complex={complex} />
       <main className="mx-auto max-w-xl space-y-4 px-4 py-5">
-        <div className="card p-5 text-center">
-          <div className="mx-auto mb-2 grid h-12 w-12 place-items-center rounded-full bg-emerald-100 text-2xl">✓</div>
-          <h1 className="h1">¡Inscripción recibida!</h1>
-          <p className="mt-1 text-neutral-600">{t.name} · {pair.category.name}</p>
-          <p className="mt-2 font-semibold">{pair.player1.fullName} / {pair.player2.fullName}</p>
-          <p className="mt-2 text-sm text-neutral-500">
-            {pair.status === "CONFIRMED" ? "Su lugar está confirmado." : "El organizador va a confirmar su lugar."} Guardá esta página para ver el estado del pago.
-          </p>
+        <div className="hero rounded-3xl p-6 text-center">
+          <div className="relative z-10">
+            <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full text-3xl" style={{ background: "var(--brand)", color: "var(--brand-ink)" }}>✓</div>
+            <h1 className="font-display text-4xl font-extrabold uppercase leading-none">¡Muchas gracias por tu inscripción!</h1>
+            <p className="mt-3 text-white/70">{t.name} · {pair.category.name}</p>
+            <p className="mt-1 font-semibold">{pair.player1.fullName} / {pair.player2.fullName}</p>
+          </div>
         </div>
+
+        {pair.status === "PENDING" && complex.adminWhatsapp && (
+          <div className="card space-y-3 p-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500">Último paso</p>
+            <h2 className="font-display text-2xl font-bold uppercase leading-tight">Enviá tu solicitud al organizador</h2>
+            <p className="text-sm text-neutral-600">Se abre WhatsApp con tus datos ya escritos: solo tocá enviar. El organizador revisa la categoría y te confirma el lugar por ese mismo chat.</p>
+            <a href={waLink(complex.adminWhatsapp, solicitud)} target="_blank" rel="noopener noreferrer" className="btn-wa w-full py-4 text-base">Enviar solicitud por WhatsApp</a>
+          </div>
+        )}
+        {pair.status === "CONFIRMED" && <p className="card p-4 text-center font-semibold text-emerald-700">✅ Tu lugar está confirmado.</p>}
+        {pair.status === "REJECTED" && <p className="card p-4 text-center text-neutral-700">El organizador se va a comunicar con ustedes por WhatsApp.</p>}
 
         {t.entryFee > 0 && (
           <div className="card space-y-4 p-5">

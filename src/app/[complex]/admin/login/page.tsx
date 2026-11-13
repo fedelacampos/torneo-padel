@@ -4,8 +4,11 @@ import { Header } from "@/components/Header";
 import { ActionForm } from "@/components/ActionForm";
 import { login } from "../actions";
 
-export default async function Login({ params }: { params: Promise<{ complex: string }> }) {
+export default async function Login({
+  params, searchParams,
+}: { params: Promise<{ complex: string }>; searchParams: Promise<{ next?: string }> }) {
   const { complex: slug } = await params;
+  const { next } = await searchParams;
   const complex = await db.complex.findUnique({ where: { slug } });
   if (!complex) notFound();
   return (
@@ -15,6 +18,7 @@ export default async function Login({ params }: { params: Promise<{ complex: str
         <h1 className="h1 mb-4">Ingreso organizador</h1>
         <ActionForm action={login} className="card space-y-3 p-5" submit="Ingresar" submitClass="btn-primary w-full">
           <input type="hidden" name="slug" value={slug} />
+          <input type="hidden" name="next" value={next ?? ""} />
           <div><label className="label">Contraseña</label><input name="password" type="password" className="input" required autoFocus /></div>
         </ActionForm>
       </main>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ActionForm } from "@/components/ActionForm";
 import type { CategoryFull } from "@/lib/tournament";
 import { adminAddPair, deletePair, setPairSeed, setPairStatus } from "../../actions";
@@ -37,8 +38,8 @@ export function PairsTab({ slug, cat }: { slug: string; cat: CategoryFull }) {
           <h2 className="h2">Por confirmar ({pending.length})</h2>
           {pending.map((p) => card(p, (
             <>
-              <form action={setPairStatus}>{h(p.id)}<button name="status" value="CONFIRMED" className="btn-primary px-3 py-1.5">Confirmar</button></form>
-              <form action={setPairStatus}>{h(p.id)}<button name="status" value="REJECTED" className="btn-ghost px-3 py-1.5">Rechazar</button></form>
+              <Link href={`/${slug}/admin/inscripcion/${p.id}?a=ok`} className="btn px-3 py-1.5 bg-emerald-600 text-white">✅ Confirmar</Link>
+              <Link href={`/${slug}/admin/inscripcion/${p.id}?a=no`} className="btn px-3 py-1.5 bg-red-600 text-white">❌ Cancelar</Link>
               <span className="text-xs text-neutral-500">Inscripta por la web</span>
             </>
           )))}

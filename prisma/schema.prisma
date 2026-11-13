@@ -26,6 +26,8 @@ model Complex {
   coverUrl         String? // foto de portada
   bookingUrl       String? // link externo para reservar cancha
   restobarWhatsapp String? // WhatsApp que recibe los pedidos del restobar (si no, adminWhatsapp)
+  welcomeMessage   String? // mensaje al confirmar una inscripción (si no, el de src/lib/messages.ts)
+  rejectMessage    String? // mensaje al cancelar una inscripción por categoría
   // Puntos del ranking (JSON). Ver src/lib/ranking.ts para el formato.
   rankingPoints String?
   createdAt     DateTime @default(now())
