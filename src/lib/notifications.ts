@@ -68,11 +68,42 @@ export async function sendDueReminders() {
     for (const [mine, rival] of [[m.pairA!, m.pairB!], [m.pairB!, m.pairA!]] as const) {
       for (const pl of [mine.player1, mine.player2]) {
         // Parámetros de la plantilla: {{1}} nombre, {{2}} hora, {{3}} cancha, {{4}} rival, {{5}} complejo
-        const ok = await sendTemplate(pl.phone, [pl.fullName.split(" ")[0], fmtTime(m.scheduledAt!), m.court ?? "-", pairName(rival), complex]);
-        if (ok) sent++;
+        const r = await sendTemplate(pl.phone, process.env.WHATSAPP_TEMPLATE || "recordatorio_partido",
+          [pl.fullName.split(" ")[0], fmtTime(m.scheduledAt!), m.court ?? "-", pairName(rival), complex]);
+        if (r.ok) sent++;
       }
     }
     await db.match.update({ where: { id: m.id }, data: { remindedAt: new Date() } });
   }
   return { sent, matches: due.length, enabled: true };
+}
+
+/**
+ * Avisa al organizador que hay una inscripción nueva, desde el WhatsApp Business del complejo.
+ * Plantilla (ver docs/whatsapp-business.md): cuerpo con 5 variables y dos botones de link
+ * (Confirmar / Cancelar) cuya parte variable es el id de la pareja.
+ */
+export async function notifyOrganizerNewPair(pairId: string) {
+  const pair = await db.pair.findUnique({
+    where: { id: pairId },
+    include: { player1: true, player2: true, category: { include: { tournament: { include: { complex: true } } } } },
+  });
+  if (!pair) return;
+  const complex = pair.category.tournament.complex;
+  if (!complex.adminWhatsapp) {
+    await db.pair.update({ where: { id: pairId }, data: { notifyError: "Falta el WhatsApp del organizador en Ajustes" } });
+    return;
+  }
+  const pl = (p: { fullName: string; phone: string; instagram: string | null }) =>
+    `${p.fullName} · +${p.phone}${p.instagram ? ` · ${p.instagram}` : ""}`;
+  const r = await sendTemplate(
+    complex.adminWhatsapp,
+    process.env.WHATSAPP_TEMPLATE_INSCRIPCION || "nueva_inscripcion",
+    [pair.category.tournament.name, pair.category.name, pl(pair.player1), pl(pair.player2), pair.availability || "Sin aclarar"],
+    [pair.id, pair.id],
+  );
+  await db.pair.update({
+    where: { id: pairId },
+    data: r.ok ? { notifiedAt: new Date(), notifyError: null } : { notifyError: r.error },
+  });
 }

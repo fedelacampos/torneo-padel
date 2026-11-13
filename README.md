@@ -51,6 +51,10 @@ npm run dev              # http://localhost:3000
 npm test             # tests de reglas de puntuación, sorteo y ranking
 ```
 
+## Aviso de inscripciones por WhatsApp Business
+Cada inscripción le llega al organizador desde el WhatsApp Business del complejo, con botones para confirmar o cancelar.
+Configuración paso a paso: [docs/whatsapp-business.md](docs/whatsapp-business.md).
+
 ## Recordatorios automáticos por WhatsApp
 Sin configurar nada, el organizador envía cada mensaje con un toque: WhatsApp se abre con el texto ya escrito.
 Para que los recordatorios salgan solos 1 hora antes:

@@ -52,6 +52,11 @@ export default async function RevisarInscripcion({
             </div>
           ))}
           {pair.availability && <p className="p-3 text-sm"><b>Disponibilidad:</b> {pair.availability}</p>}
+          {pair.source === "WEB" && (
+            <p className="p-3 text-xs text-neutral-500">
+              Aviso por WhatsApp Business: {pair.notifiedAt ? "✅ enviado" : `no enviado${pair.notifyError ? ` (${pair.notifyError})` : ""}`}
+            </p>
+          )}
         </div>
 
         {pair.status === "PENDING" && (

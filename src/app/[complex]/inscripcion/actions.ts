@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { readPlayer, registerPair, validatePlayer } from "@/lib/registration";
+import { notifyOrganizerNewPair } from "@/lib/notifications";
 
 export async function submitRegistration(_: { error?: string; ok?: string } | undefined, fd: FormData): Promise<{ error?: string; ok?: string } | undefined> {
   const slug = String(fd.get("slug"));
@@ -20,6 +21,8 @@ export async function submitRegistration(_: { error?: string; ok?: string } | un
     source: "WEB",
   });
   if ("error" in r) return { error: r.error };
+  // El WhatsApp Business del complejo le avisa al organizador (si falla, la inscripción igual queda hecha).
+  await notifyOrganizerNewPair(r.pairId).catch(() => {});
   redirect(`/${slug}/inscripcion/${r.pairId}`);
 }
 

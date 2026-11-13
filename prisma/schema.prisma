@@ -131,6 +131,9 @@ model Pair {
   pay2Status   String   @default("PENDIENTE")
   pay1Method   String?
   pay2Method   String?
+  // Aviso automático al organizador por WhatsApp Business
+  notifiedAt   DateTime?
+  notifyError  String?
   zoneId       String?
   zone         Zone?    @relation(fields: [zoneId], references: [id], onDelete: SetNull)
   seed         Int?
