@@ -2,6 +2,7 @@ import { americanoStandings, zoneStandings, type CategoryFull } from "@/lib/tour
 import { MatchCard } from "./MatchCard";
 import { ZoneTable } from "./ZoneTable";
 import { Bracket } from "./Bracket";
+import { qualifiersFor } from "@/lib/draw";
 
 /** Vista pública de una categoría: zonas con tablas, partidos y cuadro. */
 export function CategoryView({ cat }: { cat: CategoryFull }) {
@@ -11,14 +12,17 @@ export function CategoryView({ cat }: { cat: CategoryFull }) {
   if (cat.status === "REGISTRATION") return null;
 
 
+  const bracket = (
+    <section>
+      <h2 className="h2 mb-1">{cat.status === "ZONES" ? "Cuadro final" : "Cuadro"}</h2>
+      {cat.status === "ZONES" && <p className="mb-3 text-xs text-neutral-500">Se completa solo cuando terminan las zonas.</p>}
+      <Bracket matches={ko} />
+    </section>
+  );
+
   return (
     <div className="space-y-6">
-      {ko.length > 0 && (
-        <section>
-          <h2 className="h2 mb-3">Cuadro</h2>
-          <Bracket matches={ko} />
-        </section>
-      )}
+      {ko.length > 0 && cat.status !== "ZONES" && bracket}
 
       {cat.format === "AMERICANO" && (
         <section className="space-y-3">
@@ -37,13 +41,14 @@ export function CategoryView({ cat }: { cat: CategoryFull }) {
           <div className="grid gap-5 md:grid-cols-2">
             {zoneStandings(cat).map(({ zone, rows }) => (
               <div key={zone.id} className="space-y-2">
-                <ZoneTable title={zone.name} rows={rows} pairs={zone.pairs} qualify={cat.qualifiersPerZone} />
+                <ZoneTable title={zone.name} rows={rows} pairs={zone.pairs} qualify={qualifiersFor(zone.pairs.length)} />
                 {cat.matches.filter((m) => m.zoneId === zone.id).map((m) => <MatchCard key={m.id} m={m} />)}
               </div>
             ))}
           </div>
         </section>
       )}
+      {ko.length > 0 && cat.status === "ZONES" && bracket}
     </div>
   );
 }

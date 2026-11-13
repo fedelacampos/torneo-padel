@@ -27,7 +27,7 @@ export function MatchesTab({ slug, cat }: { slug: string; cat: CategoryFull }) {
           <h2 className="h2 mb-2">{g.title}</h2>
           <div className="grid gap-3 md:grid-cols-2">
             {g.matches.map((m) => {
-              const bye = !!m.winnerId && (!m.pairA || !m.pairB);
+              const bye = m.labelA === "Pase directo" || m.labelB === "Pase directo";
               if (bye) return <MatchCard key={m.id} m={m} empty="Pase directo" />;
               const ready = m.pairA && m.pairB;
               const woSide = m.walkover ? (m.winnerId === m.pairAId ? "A" : "B") : null;

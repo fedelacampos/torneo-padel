@@ -2,11 +2,12 @@ import { db } from "@/lib/db";
 import { ActionForm } from "@/components/ActionForm";
 import { FORMAT_LABEL, STATUS_LABEL } from "@/lib/tournament";
 import { MATCH_FORMAT_LABEL } from "@/lib/scoring";
+import { planSummary } from "@/lib/draw";
 import { addCategory, deleteCategory, deleteTournament, drawCategory, playoffsCategory, resetCategory, updateCategory, updateTournament } from "../../actions";
 
 type T = { id: string; name: string; entryFee: number; registrationOpen: boolean; countsForRanking: boolean; contactPhones: string | null; notes: string | null };
 
-function FormatFields({ d, locked = false }: { d?: { format: string; matchFormat: string; zoneSize: number; qualifiersPerZone: number; eventName?: string | null; modality?: string }; locked?: boolean }) {
+function FormatFields({ d, locked = false }: { d?: { format: string; matchFormat: string; eventName?: string | null; modality?: string }; locked?: boolean }) {
   return (
     <>
       <div>
@@ -32,14 +33,10 @@ function FormatFields({ d, locked = false }: { d?: { format: string; matchFormat
           {Object.entries(MATCH_FORMAT_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
       </div>
-      <div>
-        <label className="label">Parejas por zona</label>
-        <input name="zoneSize" type="number" min="2" max="6" defaultValue={d?.zoneSize ?? 3} className="input" disabled={locked} />
-      </div>
-      <div>
-        <label className="label">Clasifican por zona</label>
-        <input name="qualifiersPerZone" type="number" min="1" max="4" defaultValue={d?.qualifiersPerZone ?? 2} className="input" disabled={locked} />
-      </div>
+      <p className="rounded-xl bg-neutral-50 p-3 text-xs text-neutral-600 sm:col-span-2">
+        <b>Zonas automáticas:</b> al sortear se arman zonas de 3 parejas (clasifican 2) y, si no da justo, algunas de 4 (clasifican 3),
+        según las parejas confirmadas. El cuadro final se arma en el mismo sorteo y se completa solo al terminar las zonas.
+      </p>
     </>
   );
 }
@@ -74,13 +71,16 @@ export async function CategoriesTab({ slug, tournament: t }: { slug: string; tou
             <p className="text-sm text-neutral-500">
               {confirmed} parejas confirmadas{pendingP > 0 && <> · <b className="text-amber-700">{pendingP} por confirmar</b></>}
             </p>
+            {c.status === "REGISTRATION" && c.format === "ZONES_KO" && confirmed >= 2 && (
+              <p className="mt-1 text-sm font-medium">Si sorteás ahora: {planSummary(confirmed)}</p>
+            )}
 
             <div className="mt-3 flex flex-wrap gap-2">
               {c.status === "REGISTRATION" && (
-                <ActionForm action={drawCategory} submit={c.format === "KO" ? "Sortear cuadro" : c.format === "AMERICANO" ? "Armar fixture" : "Sortear zonas"}>{catHidden}</ActionForm>
+                <ActionForm action={drawCategory} submit={c.format === "KO" ? "Sortear cuadro" : c.format === "AMERICANO" ? "Armar fixture" : "Sortear zonas y cuadro"}>{catHidden}</ActionForm>
               )}
-              {c.format === "ZONES_KO" && c.status === "ZONES" && (
-                <ActionForm action={playoffsCategory} submit={zonesDone ? "Armar cuadro con clasificados" : "Armar cuadro (faltan resultados)"} submitClass={zonesDone ? "btn-primary" : "btn-ghost"}>{catHidden}</ActionForm>
+              {c.format === "ZONES_KO" && c.status === "ZONES" && zonesDone && (
+                <ActionForm action={playoffsCategory} submit="Completar cuadro con clasificados" submitClass="btn-ghost">{catHidden}</ActionForm>
               )}
               {c.status !== "REGISTRATION" && (
                 <form action={resetCategory}>{catHidden}<button className="btn-ghost text-red-700">Deshacer sorteo</button></form>

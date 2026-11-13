@@ -4,6 +4,56 @@ import { matchTotals, type SetScore } from "./scoring";
 /* ---------------- Zonas ---------------- */
 
 /**
+ * Cuántas zonas y de qué tamaño, según la cantidad de parejas: zonas de 3 y, cuando no da
+ * justo, algunas de 4 (10 parejas → 3, 3, 4). Con 5 parejas, una sola zona de 5.
+ */
+export function planZones(n: number): number[] {
+  if (n < 3) return [];
+  if (n === 5) return [5];
+  const fours = [0, 1, 2][n % 3];
+  const threes = (n - 4 * fours) / 3;
+  return [...Array(threes).fill(3), ...Array(fours).fill(4)];
+}
+
+/** Clasifican 2 en zonas de 3, 3 en zonas de 4 (y 4 en la zona única de 5). */
+export function qualifiersFor(zoneSize: number): number {
+  if (zoneSize <= 3) return 2;
+  if (zoneSize === 4) return 3;
+  return 4;
+}
+
+/** Resumen para mostrar antes de sortear: "3 zonas (2 de 3 y 1 de 4) · 7 clasificados · cuadro de cuartos". */
+export function planSummary(n: number): string {
+  const z = planZones(n);
+  if (z.length === 0) return n === 2 ? "2 parejas: se juega directamente la final." : "Se necesitan al menos 2 parejas.";
+  const c3 = z.filter((x) => x === 3).length;
+  const c4 = z.filter((x) => x === 4).length;
+  const parts = [c3 && `${c3} de 3`, c4 && `${c4} de 4`, z.includes(5) && "1 de 5"].filter(Boolean).join(" y ");
+  const q = z.reduce((t, x) => t + qualifiersFor(x), 0);
+  return `${z.length} ${z.length === 1 ? "zona" : "zonas"} (${parts}) · ${q} clasificados · cuadro desde ${roundLabel(nextPow2(q)).toLowerCase()}`;
+}
+
+/** Reparte las parejas en zonas con los tamaños dados (cabezas de serie primero, una por zona). */
+export function buildZonesBySizes<T extends { id: string; seed?: number | null }>(
+  pairs: T[],
+  sizes: number[],
+  random: () => number = Math.random,
+): T[][] {
+  const seeded = pairs.filter((p) => p.seed != null).sort((x, y) => (x.seed! - y.seed!));
+  const rest = shuffle(pairs.filter((p) => p.seed == null), random);
+  const ordered = [...seeded, ...rest];
+  const zones: T[][] = sizes.map(() => []);
+  let i = 0;
+  // Reparto en "serpiente" saltando las zonas ya completas.
+  for (let round = 0; i < ordered.length; round++) {
+    const idxs = sizes.map((_, k) => k);
+    if (round % 2 === 1) idxs.reverse();
+    for (const k of idxs) if (zones[k].length < sizes[k] && i < ordered.length) zones[k].push(ordered[i++]);
+  }
+  return zones;
+}
+
+/**
  * Reparte las parejas en zonas del tamaño pedido. Si no es exacto, algunas zonas
  * quedan con una pareja más (ej. 10 parejas en zonas de 3 => 4, 3, 3).
  * Las parejas cabeza de serie (seed) se reparten primero, una por zona.
@@ -142,7 +192,7 @@ export function seedOrder(size: number): number[] {
   return order;
 }
 
-export type Qualifier = { pairId: string; zone?: string };
+export type Qualifier = { pairId?: string; zone?: string; label?: string };
 
 /**
  * Arma la primera ronda del cuadro. `qualifiers` viene ordenado por siembra.
@@ -158,18 +208,31 @@ export function firstRound(qualifiers: Qualifier[]): [Qualifier | null, Qualifie
 
   const sameZone = (m: [Qualifier | null, Qualifier | null]) =>
     !!m[0] && !!m[1] && !!m[0].zone && m[0].zone === m[1].zone;
+  // Puesto en la zona ("2°" de "2° Zona B"), para intercambiar preferentemente parejas del mismo puesto.
+  const rank = (q: Qualifier | null) => q?.label?.split(" ")[0] ?? "";
   for (let i = 0; i < matches.length; i++) {
     if (!sameZone(matches[i])) continue;
+    // Opciones: cambiar el rival (lado B) con otro partido, o cambiar el lado A con otra pareja del mismo puesto.
+    const options: { j: number; side: 0 | 1; score: number }[] = [];
     for (let j = 0; j < matches.length; j++) {
-      if (i === j || !matches[j][1]) continue;
-      const a: [Qualifier | null, Qualifier | null] = [matches[i][0], matches[j][1]];
-      const b: [Qualifier | null, Qualifier | null] = [matches[j][0], matches[i][1]];
-      if (!sameZone(a) && !sameZone(b)) {
-        const tmp = matches[i][1];
-        matches[i][1] = matches[j][1];
-        matches[j][1] = tmp;
-        break;
+      if (i === j) continue;
+      for (const side of [1, 0] as const) {
+        const mine = matches[i][side];
+        const other = matches[j][side];
+        if (!other) continue;
+        const a = [...matches[i]] as [Qualifier | null, Qualifier | null];
+        const b = [...matches[j]] as [Qualifier | null, Qualifier | null];
+        a[side] = other; b[side] = mine;
+        if (sameZone(a) || sameZone(b)) continue;
+        options.push({ j, side, score: (rank(mine) === rank(other) ? 0 : 2) + (side === 1 ? 0 : 1) });
       }
+    }
+    options.sort((x, y) => x.score - y.score);
+    const best = options[0];
+    if (best) {
+      const tmp = matches[i][best.side];
+      matches[i][best.side] = matches[best.j][best.side];
+      matches[best.j][best.side] = tmp;
     }
   }
   return matches;
@@ -179,10 +242,12 @@ export function firstRound(qualifiers: Qualifier[]): [Qualifier | null, Qualifie
  * Orden de siembra de los clasificados de zona: primero todos los 1ros (zona A, B, ...),
  * después los 2dos, etc.
  */
-export function seedQualifiers(zones: { name: string; ranked: string[] }[], perZone: number): Qualifier[] {
+export function seedQualifiers(zones: { name: string; ranked: (string | undefined)[]; qualify: number }[]): Qualifier[] {
   const out: Qualifier[] = [];
-  for (let pos = 0; pos < perZone; pos++)
-    for (const z of zones) if (z.ranked[pos]) out.push({ pairId: z.ranked[pos], zone: z.name });
+  const max = Math.max(0, ...zones.map((z) => z.qualify));
+  for (let pos = 0; pos < max; pos++)
+    for (const z of zones)
+      if (pos < z.qualify) out.push({ pairId: z.ranked[pos], zone: z.name, label: `${pos + 1}° ${z.name}` });
   return out;
 }
 

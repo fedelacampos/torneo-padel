@@ -167,6 +167,9 @@ model Match {
   pairA       Pair?     @relation("pairA", fields: [pairAId], references: [id], onDelete: SetNull)
   pairBId     String?
   pairB       Pair?     @relation("pairB", fields: [pairBId], references: [id], onDelete: SetNull)
+  // Lugar en el cuadro antes de conocer a la pareja, ej. "1° Zona A" o "Pase directo"
+  labelA      String?
+  labelB      String?
   sets        String? // JSON: [{a:6,b:4},{a:6,b:7,tbA:5,tbB:7},{a:10,b:8,super:true}]
   walkover    Boolean   @default(false)
   winnerId    String?

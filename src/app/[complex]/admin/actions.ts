@@ -146,8 +146,6 @@ export async function addCategory(_: State, fd: FormData): Promise<State> {
       modality: s(fd, "modality") || "Doble",
       format: s(fd, "format") || "ZONES_KO",
       matchFormat: s(fd, "matchFormat") || "BEST_OF_3",
-      zoneSize: Math.min(6, Math.max(2, Number(s(fd, "zoneSize")) || 3)),
-      qualifiersPerZone: Math.min(4, Math.max(1, Number(s(fd, "qualifiersPerZone")) || 2)),
     },
   });
   revalidatePath(`/${c.slug}/admin/torneo/${t.id}`);
@@ -167,8 +165,6 @@ export async function updateCategory(_: State, fd: FormData): Promise<State> {
       matchFormat: s(fd, "matchFormat") || cat.matchFormat,
       ...(locked ? {} : {
         format: s(fd, "format") || cat.format,
-        zoneSize: Math.min(6, Math.max(2, Number(s(fd, "zoneSize")) || 3)),
-        qualifiersPerZone: Math.min(4, Math.max(1, Number(s(fd, "qualifiersPerZone")) || 2)),
       }),
     },
   });

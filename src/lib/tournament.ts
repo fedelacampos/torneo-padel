@@ -1,6 +1,6 @@
 // Operaciones de torneo sobre la base de datos: sorteo, cuadros, resultados y ranking.
 import { db } from "./db";
-import { buildZones, firstRound, nextPow2, roundRobin, seedQualifiers, standings, zoneName, shuffle, type Qualifier } from "./draw";
+import { buildZonesBySizes, firstRound, nextPow2, planZones, qualifiersFor, roundRobin, seedQualifiers, standings, zoneName, shuffle, type Qualifier } from "./draw";
 import { parseSets, validateMatch, type MatchFormat, type SetScore } from "./scoring";
 import { americanoPoints, koCategoryPoints, parsePoints } from "./ranking";
 
@@ -70,9 +70,9 @@ export async function generateDraw(categoryId: string): Promise<string | null> {
     db.zone.deleteMany({ where: { categoryId } }),
   ]);
 
-  if (cat.format === "ZONES_KO") {
-    if (pairs.length < cat.zoneSize) return `Se necesitan al menos ${cat.zoneSize} parejas para armar zonas.`;
-    const zones = buildZones(pairs, cat.zoneSize);
+  if (cat.format === "ZONES_KO" && pairs.length >= 3) {
+    // Zonas de 3 y de 4 según la cantidad de parejas, y el cuadro final armado con los lugares.
+    const zones = buildZonesBySizes(pairs, planZones(pairs.length));
     for (let i = 0; i < zones.length; i++) {
       const zone = await db.zone.create({ data: { categoryId, name: zoneName(i) } });
       await db.pair.updateMany({ where: { id: { in: zones[i].map((p) => p.id) } }, data: { zoneId: zone.id } });
@@ -81,6 +81,7 @@ export async function generateDraw(categoryId: string): Promise<string | null> {
         data: games.map(([a, b], pos) => ({ categoryId, stage: "ZONE", zoneId: zone.id, position: pos, pairAId: a.id, pairBId: b.id })),
       });
     }
+    await buildSkeleton(categoryId);
     await db.category.update({ where: { id: categoryId }, data: { status: "ZONES" } });
   } else if (cat.format === "AMERICANO") {
     const games = roundRobin(shuffle(pairs));
@@ -89,14 +90,22 @@ export async function generateDraw(categoryId: string): Promise<string | null> {
     });
     await db.category.update({ where: { id: categoryId }, data: { status: "ZONES" } });
   } else {
+    // Eliminación directa (o zonas con solo 2 parejas: directamente la final).
     const seeded = pairs.filter((p) => p.seed != null).sort((a, b) => a.seed! - b.seed!);
     const rest = shuffle(pairs.filter((p) => p.seed == null));
-    await createBracket(categoryId, [...seeded, ...rest].map((p) => ({ pairId: p.id })));
+    await fillBracket(categoryId, [...seeded, ...rest].map((p) => ({ pairId: p.id })), false);
   }
   return null;
 }
 
-/** Arma el cuadro de eliminación con los clasificados de las zonas. */
+/** Cuadro final con los lugares ("1° Zona A") antes de que terminen las zonas. */
+async function buildSkeleton(categoryId: string) {
+  const zones = await db.zone.findMany({ where: { categoryId }, orderBy: { name: "asc" }, include: { _count: { select: { pairs: true } } } });
+  const q = seedQualifiers(zones.map((z) => ({ name: z.name, ranked: [], qualify: qualifiersFor(z._count.pairs) })));
+  await fillBracket(categoryId, q, true);
+}
+
+/** Completa el cuadro con los clasificados de las zonas (se llama solo al terminar la última zona). */
 export async function generatePlayoffs(categoryId: string): Promise<string | null> {
   const cat = await getCategoryFull(categoryId);
   if (!cat) return "Categoría inexistente.";
@@ -104,36 +113,72 @@ export async function generatePlayoffs(categoryId: string): Promise<string | nul
   const zs = zoneStandings(cat);
   if (!zs.every((z) => z.done)) return "Todavía hay partidos de zona sin resultado.";
   const q = seedQualifiers(
-    zs.map((z) => ({ name: z.zone.name, ranked: z.rows.map((r) => r.pairId) })),
-    cat.qualifiersPerZone,
+    zs.map((z) => ({ name: z.zone.name, ranked: z.rows.map((r) => r.pairId), qualify: qualifiersFor(z.zone.pairs.length) })),
   );
   if (q.length < 2) return "No hay suficientes clasificados.";
-  await db.match.deleteMany({ where: { categoryId, stage: "KO" } });
-  await createBracket(categoryId, q);
+  await fillBracket(categoryId, q, false);
   return null;
 }
 
-async function createBracket(categoryId: string, qualifiers: Qualifier[]) {
+/** ¿Ya se jugó algún partido del cuadro? (los pases directos no cuentan) */
+async function koStarted(categoryId: string) {
+  return (await db.match.count({ where: { categoryId, stage: "KO", winnerId: { not: null }, pairAId: { not: null }, pairBId: { not: null } } })) > 0;
+}
+
+/**
+ * Arma o actualiza el cuadro. Si ya existe uno con la misma forma, lo actualiza en el lugar
+ * para no perder los horarios y canchas asignados.
+ * skeleton = true: solo lugares ("1° Zona A"), todavía sin parejas.
+ */
+async function fillBracket(categoryId: string, qualifiers: Qualifier[], skeleton: boolean) {
   const size = nextPow2(qualifiers.length);
   const first = firstRound(qualifiers);
-  const data: { categoryId: string; stage: string; round: number; position: number; pairAId?: string; pairBId?: string }[] = [];
+  type Row = { round: number; position: number; pairAId: string | null; pairBId: string | null; labelA: string | null; labelB: string | null };
+  const plan: Row[] = [];
   for (let round = size; round >= 2; round /= 2) {
     for (let pos = 0; pos < round / 2; pos++) {
       const m = round === size ? first[pos] : null;
-      data.push({ categoryId, stage: "KO", round, position: pos, pairAId: m?.[0]?.pairId, pairBId: m?.[1]?.pairId });
+      const bye = !!m && (!m[0] || !m[1]);
+      plan.push({
+        round, position: pos,
+        pairAId: m?.[0]?.pairId ?? null, pairBId: m?.[1]?.pairId ?? null,
+        labelA: m?.[0]?.label ?? (bye ? "Pase directo" : null),
+        labelB: m?.[1]?.label ?? (bye ? "Pase directo" : null),
+      });
     }
   }
-  await db.match.createMany({ data });
-  // Byes: la pareja sin rival pasa directo.
-  const byes = await db.match.findMany({ where: { categoryId, stage: "KO", round: size } });
-  for (const m of byes) {
-    const only = m.pairAId && !m.pairBId ? m.pairAId : !m.pairAId && m.pairBId ? m.pairBId : null;
-    if (only) {
-      await db.match.update({ where: { id: m.id }, data: { winnerId: only } });
-      await placeWinner(categoryId, m.round, m.position, only);
+
+  const existing = await db.match.findMany({ where: { categoryId, stage: "KO" } });
+  const key = (r: { round: number; position: number }) => `${r.round}-${r.position}`;
+  const sameShape = existing.length === plan.length && plan.every((r) => existing.some((e) => key(e) === key(r)));
+  if (sameShape) {
+    for (const r of plan) {
+      const e = existing.find((x) => key(x) === key(r))!;
+      await db.match.update({
+        where: { id: e.id },
+        data: { pairAId: r.pairAId, pairBId: r.pairBId, labelA: r.labelA, labelB: r.labelB, winnerId: null, sets: null, walkover: false },
+      });
+    }
+  } else {
+    await db.match.deleteMany({ where: { categoryId, stage: "KO" } });
+    await db.match.createMany({ data: plan.map((r) => ({ categoryId, stage: "KO", ...r })) });
+  }
+
+  // Pases directos: la pareja (o el lugar) sin rival pasa a la ronda siguiente.
+  for (const r of plan.filter((x) => x.round === size)) {
+    const real = r.pairAId && !r.pairBId ? r.pairAId : !r.pairAId && r.pairBId ? r.pairBId : null;
+    const label = r.labelA === "Pase directo" ? r.labelB : r.labelB === "Pase directo" ? r.labelA : null;
+    if (!skeleton && real) {
+      const m = await db.match.findFirst({ where: { categoryId, stage: "KO", round: r.round, position: r.position } });
+      await db.match.update({ where: { id: m!.id }, data: { winnerId: real } });
+      await placeWinner(categoryId, r.round, r.position, real);
+    }
+    if (label && size > 2) {
+      const next = await db.match.findFirst({ where: { categoryId, stage: "KO", round: size / 2, position: Math.floor(r.position / 2) } });
+      if (next) await db.match.update({ where: { id: next.id }, data: r.position % 2 === 0 ? { labelA: label } : { labelB: label } });
     }
   }
-  await db.category.update({ where: { id: categoryId }, data: { status: "PLAYOFFS" } });
+  if (!skeleton) await db.category.update({ where: { id: categoryId }, data: { status: "PLAYOFFS" } });
 }
 
 async function placeWinner(categoryId: string, round: number, position: number, winnerId: string | null) {
@@ -187,6 +232,11 @@ export async function saveResult(
     const pending = await db.match.count({ where: { categoryId: m.categoryId, stage: "AMERICANO", winnerId: null } });
     if (pending === 0) await db.category.update({ where: { id: m.categoryId }, data: { status: "FINISHED" } });
   }
+  if (m.stage === "ZONE") {
+    // Al cargar el último resultado de zona, el cuadro se completa solo (si todavía no se jugó).
+    const pending = await db.match.count({ where: { categoryId: m.categoryId, stage: "ZONE", winnerId: null } });
+    if (pending === 0 && !(await koStarted(m.categoryId))) await generatePlayoffs(m.categoryId);
+  }
   return null;
 }
 
@@ -201,6 +251,11 @@ export async function clearResult(matchId: string): Promise<string | null> {
     await placeWinner(m.categoryId, m.round, m.position, null);
   }
   await db.match.update({ where: { id: matchId }, data: { sets: null, walkover: false, winnerId: null } });
+  if (m.stage === "ZONE" && !(await koStarted(m.categoryId))) {
+    await buildSkeleton(m.categoryId);
+    await db.category.update({ where: { id: m.categoryId }, data: { status: "ZONES" } });
+    return null;
+  }
   const cat = await db.category.findUnique({ where: { id: m.categoryId } });
   if (cat?.status === "FINISHED")
     await db.category.update({ where: { id: m.categoryId }, data: { status: m.stage === "KO" ? "PLAYOFFS" : "ZONES" } });

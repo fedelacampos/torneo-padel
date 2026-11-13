@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { validateMatch, validateSet, formatScore } from "@/lib/scoring";
-import { buildZones, roundRobin, standings, firstRound, seedOrder, seedQualifiers } from "@/lib/draw";
+import { buildZones, roundRobin, standings, firstRound, seedOrder, seedQualifiers, planZones, buildZonesBySizes, planSummary } from "@/lib/draw";
 import { koCategoryPoints, DEFAULT_POINTS } from "@/lib/ranking";
 
 describe("sets", () => {
@@ -57,10 +57,7 @@ describe("sorteo", () => {
     expect(seedOrder(8)).toEqual([1, 8, 4, 5, 2, 7, 3, 6]);
   });
   it("cuadro con byes y sin cruces de misma zona", () => {
-    const q = seedQualifiers(
-      ["A", "B", "C"].map((n) => ({ name: n, ranked: [n + "1", n + "2"] })),
-      2,
-    );
+    const q = seedQualifiers(["A", "B", "C"].map((n) => ({ name: n, ranked: [n + "1", n + "2"], qualify: 2 })));
     const r = firstRound(q);
     expect(r.length).toBe(4);
     expect(r.filter((m) => m[1] === null).length).toBe(2); // 2 byes
@@ -108,4 +105,43 @@ describe("mensajes", () => {
     expect(t).toContain("participes en 6ta Damas");
     expect(t).not.toContain("[");
   });
+});
+
+describe("zonas automáticas", () => {
+  it("zonas de 3 y de 4 según la cantidad", () => {
+    expect(planZones(6)).toEqual([3, 3]);
+    expect(planZones(7)).toEqual([3, 4]);
+    expect(planZones(8)).toEqual([4, 4]);
+    expect(planZones(10)).toEqual([3, 3, 4]);
+    expect(planZones(11)).toEqual([3, 4, 4]);
+    expect(planZones(12)).toEqual([3, 3, 3, 3]);
+    expect(planZones(4)).toEqual([4]);
+    expect(planZones(5)).toEqual([5]);
+    for (let n = 3; n <= 64; n++) expect(planZones(n).reduce((a, b) => a + b, 0)).toBe(n);
+  });
+  it("reparte respetando tamaños", () => {
+    const pairs = Array.from({ length: 11 }, (_, i) => ({ id: "p" + i, seed: i < 3 ? i + 1 : null }));
+    const z = buildZonesBySizes(pairs, planZones(11));
+    expect(z.map((x) => x.length)).toEqual([3, 4, 4]);
+    expect(z.map((x) => x[0].seed)).toEqual([1, 2, 3]); // un cabeza de serie por zona
+  });
+  it("clasificados con zonas de 4", () => {
+    const zones = [{ name: "Zona A", size: 3 }, { name: "Zona B", size: 4 }, { name: "Zona C", size: 3 }];
+    const q = seedQualifiers(zones.map((z) => ({ name: z.name, ranked: [], qualify: z.size === 4 ? 3 : 2 })));
+    expect(q.map((x) => x.label)).toEqual(["1° Zona A", "1° Zona B", "1° Zona C", "2° Zona A", "2° Zona B", "2° Zona C", "3° Zona B"]);
+    const r = firstRound(q);
+    expect(r.length).toBe(4); // cuartos con 1 pase directo
+    for (const [a, b] of r) if (a && b) expect(a.zone).not.toBe(b.zone);
+    expect(planSummary(10)).toBe("3 zonas (2 de 3 y 1 de 4) · 7 clasificados · cuadro desde cuartos de final");
+  });
+});
+
+describe("cruces sin repetir zona", () => {
+  for (const n of [6, 7, 8, 9, 10, 11, 13, 14, 16, 17, 20, 23, 25, 31, 32]) {
+    it(`${n} parejas`, () => {
+      const zones = planZones(n).map((size, i) => ({ name: "Zona " + "ABCDEFGHIJK"[i], ranked: [], qualify: size === 3 ? 2 : size === 4 ? 3 : 4 }));
+      const r = firstRound(seedQualifiers(zones));
+      for (const [a, b] of r) if (a && b) expect(a.zone).not.toBe(b.zone);
+    });
+  }
 });

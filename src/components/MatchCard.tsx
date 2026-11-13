@@ -8,6 +8,8 @@ export type MatchView = {
   pairB: P;
   pairAId: string | null;
   pairBId: string | null;
+  labelA?: string | null;
+  labelB?: string | null;
   winnerId: string | null;
   sets: string | null;
   walkover: boolean;
@@ -52,7 +54,9 @@ export function MatchCard({ m, label, empty = "A definir" }: { m: MatchView; lab
         <td className="w-full py-1 pr-2">
           <span className={`flex items-center gap-2 ${won ? "font-bold text-neutral-900" : m.winnerId ? "text-neutral-500" : "text-neutral-800"}`}>
             <span className="h-4 w-1 shrink-0 rounded-full" style={{ background: won ? "var(--brand)" : "transparent", boxShadow: won ? "0 0 0 1px rgba(0,0,0,.15)" : undefined }} />
-            <span className="line-clamp-1">{pair ? pairName(pair) : <span className="italic text-neutral-400">{empty}</span>}</span>
+            <span className="line-clamp-1">
+              {pair ? pairName(pair) : <span className="italic text-neutral-400">{(side === "a" ? m.labelA : m.labelB) ?? empty}</span>}
+            </span>
           </span>
         </td>
         {m.walkover ? (

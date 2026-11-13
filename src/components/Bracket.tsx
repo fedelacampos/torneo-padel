@@ -16,8 +16,7 @@ export function Bracket({ matches }: { matches: (MatchView & { round: number; po
                 .filter((m) => m.round === r)
                 .sort((a, b) => a.position - b.position)
                 .map((m) => {
-                  const bye = m.winnerId && (!m.pairA || !m.pairB);
-                  return <MatchCard key={m.id} m={m} empty={bye ? "Pase directo" : "A definir"} />;
+                  return <MatchCard key={m.id} m={m} empty="A definir" />;
                 })}
             </div>
           </div>
