@@ -1,0 +1,138 @@
+// Modelo de datos del sistema de torneos de pádel.
+// Para producción cambiar provider a "postgresql" (por ejemplo Supabase).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Cada complejo es un cliente del sistema, con su propia marca y datos.
+model Complex {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  logoUrl       String?
+  primaryColor  String   @default("#0f766e")
+  adminWhatsapp String? // teléfono del organizador para avisos de pago
+  mpLink        String? // link de pago de Mercado Pago
+  mpAlias       String? // alias para transferencias
+  adminPassword String // hash
+  // Puntos del ranking (JSON). Ver src/lib/ranking.ts para el formato.
+  rankingPoints String?
+  createdAt     DateTime @default(now())
+
+  tournaments Tournament[]
+  players     Player[]
+}
+
+model Tournament {
+  id               String   @id @default(cuid())
+  complexId        String
+  complex          Complex  @relation(fields: [complexId], references: [id], onDelete: Cascade)
+  name             String
+  startDate        DateTime
+  endDate          DateTime
+  entryFee         Int      @default(0) // por jugador, en pesos
+  registrationOpen Boolean  @default(true)
+  countsForRanking Boolean  @default(true)
+  notes            String?
+  createdAt        DateTime @default(now())
+
+  categories Category[]
+}
+
+model Category {
+  id                String     @id @default(cuid())
+  tournamentId      String
+  tournament        Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  name              String // ej: "5ta Caballeros" (se usa también para el ranking)
+  format            String     @default("ZONES_KO") // ZONES_KO | KO | AMERICANO
+  matchFormat       String     @default("BEST_OF_3") // BEST_OF_3 | SUPER_TB
+  zoneSize          Int        @default(3)
+  qualifiersPerZone Int        @default(2)
+  status            String     @default("REGISTRATION") // REGISTRATION | ZONES | PLAYOFFS | FINISHED
+  createdAt         DateTime   @default(now())
+
+  pairs   Pair[]
+  zones   Zone[]
+  matches Match[]
+}
+
+model Player {
+  id        String   @id @default(cuid())
+  complexId String
+  complex   Complex  @relation(fields: [complexId], references: [id], onDelete: Cascade)
+  fullName  String
+  phone     String // normalizado, se usa para identificar al jugador entre torneos
+  address   String?
+  instagram String?
+  createdAt DateTime @default(now())
+
+  pairsAsP1 Pair[] @relation("p1")
+  pairsAsP2 Pair[] @relation("p2")
+
+  @@unique([complexId, phone])
+}
+
+model Pair {
+  id           String   @id @default(cuid())
+  categoryId   String
+  category     Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  player1Id    String
+  player1      Player   @relation("p1", fields: [player1Id], references: [id], onDelete: Cascade)
+  player2Id    String
+  player2      Player   @relation("p2", fields: [player2Id], references: [id], onDelete: Cascade)
+  availability String?
+  source       String   @default("WEB") // WEB | ADMIN
+  status       String   @default("PENDING") // PENDING | CONFIRMED | REJECTED
+  // Estado de pago de cada jugador: PENDIENTE | INFORMADO | PAGADO
+  pay1Status   String   @default("PENDIENTE")
+  pay2Status   String   @default("PENDIENTE")
+  pay1Method   String?
+  pay2Method   String?
+  zoneId       String?
+  zone         Zone?    @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  seed         Int?
+  createdAt    DateTime @default(now())
+
+  matchesAsA Match[] @relation("pairA")
+  matchesAsB Match[] @relation("pairB")
+  matchesWon Match[] @relation("winner")
+}
+
+model Zone {
+  id         String   @id @default(cuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name       String
+
+  pairs   Pair[]
+  matches Match[]
+}
+
+model Match {
+  id          String    @id @default(cuid())
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  stage       String // ZONE | KO | AMERICANO
+  zoneId      String?
+  zone        Zone?     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  round       Int       @default(0) // KO: cantidad de parejas en la ronda (32, 16, 8, 4, 2)
+  position    Int       @default(0) // orden dentro de la ronda
+  pairAId     String?
+  pairA       Pair?     @relation("pairA", fields: [pairAId], references: [id], onDelete: SetNull)
+  pairBId     String?
+  pairB       Pair?     @relation("pairB", fields: [pairBId], references: [id], onDelete: SetNull)
+  sets        String? // JSON: [{a:6,b:4},{a:6,b:7,tbA:5,tbB:7},{a:10,b:8,super:true}]
+  walkover    Boolean   @default(false)
+  winnerId    String?
+  winner      Pair?     @relation("winner", fields: [winnerId], references: [id], onDelete: SetNull)
+  court       String?
+  scheduledAt DateTime?
+  remindedAt  DateTime?
+  updatedAt   DateTime  @updatedAt
+}
