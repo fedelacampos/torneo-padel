@@ -29,6 +29,7 @@ export default async function Ajustes({ params }: { params: Promise<{ complex: s
           </div>
           <div className="card grid gap-3 p-4">
             <h2 className="h2">Links y contacto</h2>
+            <div><label className="label">Localidad / dirección del complejo</label><input name="location" defaultValue={c.location ?? ""} className="input" placeholder="Ej: Ruta 92 km 3, Ciudad, Provincia" /></div>
             <div><label className="label">Link para reservar cancha</label><input name="bookingUrl" defaultValue={c.bookingUrl ?? ""} className="input" placeholder="https://..." inputMode="url" /></div>
             <div><label className="label">WhatsApp del organizador (recibe avisos de pago de torneos)</label><input name="adminWhatsapp" defaultValue={c.adminWhatsapp ?? ""} className="input" placeholder="5491123456789" inputMode="tel" /></div>
             <div><label className="label">WhatsApp del restobar (recibe los pedidos; si lo dejás vacío se usa el de arriba)</label><input name="restobarWhatsapp" defaultValue={c.restobarWhatsapp ?? ""} className="input" placeholder="5491123456789" inputMode="tel" /></div>

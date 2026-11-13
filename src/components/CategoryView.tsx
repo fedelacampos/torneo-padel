@@ -11,8 +11,8 @@ export function CategoryView({ cat }: { cat: CategoryFull }) {
   if (cat.status === "REGISTRATION") {
     return (
       <div className="card p-4">
-        <p className="font-semibold">Inscripción abierta</p>
-        <p className="text-sm text-neutral-600">{confirmed.length} parejas confirmadas. El sorteo se publica antes del torneo.</p>
+        <h2 className="h2">Parejas confirmadas ({confirmed.length})</h2>
+        <p className="mt-1 text-sm text-neutral-600">El sorteo de zonas y horarios se publica antes del torneo.</p>
         <ul className="mt-3 grid gap-1 text-sm sm:grid-cols-2">
           {confirmed.map((p) => (
             <li key={p.id} className="rounded-lg bg-neutral-50 px-3 py-1.5">{p.player1.fullName} / {p.player2.fullName}</li>

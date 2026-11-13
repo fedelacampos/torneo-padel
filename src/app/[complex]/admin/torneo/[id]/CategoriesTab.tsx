@@ -4,11 +4,22 @@ import { FORMAT_LABEL, STATUS_LABEL } from "@/lib/tournament";
 import { MATCH_FORMAT_LABEL } from "@/lib/scoring";
 import { addCategory, deleteCategory, deleteTournament, drawCategory, playoffsCategory, resetCategory, updateCategory, updateTournament } from "../../actions";
 
-type T = { id: string; name: string; entryFee: number; registrationOpen: boolean; countsForRanking: boolean };
+type T = { id: string; name: string; entryFee: number; registrationOpen: boolean; countsForRanking: boolean; contactPhones: string | null; notes: string | null };
 
-function FormatFields({ d, locked = false }: { d?: { format: string; matchFormat: string; zoneSize: number; qualifiersPerZone: number }; locked?: boolean }) {
+function FormatFields({ d, locked = false }: { d?: { format: string; matchFormat: string; zoneSize: number; qualifiersPerZone: number; eventName?: string | null; modality?: string }; locked?: boolean }) {
   return (
     <>
+      <div>
+        <label className="label">Nombre del evento (opcional)</label>
+        <input name="eventName" defaultValue={d?.eventName ?? ""} className="input" placeholder="Si queda vacío, se usa el nombre de la categoría" />
+      </div>
+      <div>
+        <label className="label">Modalidad</label>
+        <select name="modality" defaultValue={d?.modality ?? "Doble"} className="input">
+          <option>Doble</option>
+          <option>Single</option>
+        </select>
+      </div>
       <div>
         <label className="label">Formato del torneo</label>
         <select name="format" defaultValue={d?.format ?? "ZONES_KO"} className="input" disabled={locked}>
@@ -105,11 +116,13 @@ export async function CategoriesTab({ slug, tournament: t }: { slug: string; tou
       </div>
 
       <details className="card p-4">
-        <summary className="cursor-pointer font-semibold">Datos del torneo</summary>
+        <summary className="cursor-pointer font-semibold">Datos del torneo (costo, contacto, descripción)</summary>
         <ActionForm action={updateTournament} className="mt-3 grid gap-3 sm:grid-cols-2" submit="Guardar">
           {hidden}
           <div><label className="label">Nombre</label><input name="name" defaultValue={t.name} className="input" /></div>
           <div><label className="label">Inscripción por jugador ($)</label><input name="entryFee" type="number" min="0" defaultValue={t.entryFee} className="input" /></div>
+          <div><label className="label">Teléfonos de contacto</label><input name="contactPhones" defaultValue={t.contactPhones ?? ""} className="input" placeholder="11 2345-6789, 11 5555-4444" /></div>
+          <div className="sm:col-span-2"><label className="label">Descripción (se muestra en la información del evento)</label><textarea name="notes" rows={4} defaultValue={t.notes ?? ""} className="input" placeholder="Ej: incluye pelotas nuevas y hidratación. Premios para campeones y finalistas." /></div>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="registrationOpen" defaultChecked={t.registrationOpen} className="h-5 w-5" /> Inscripción abierta en la web</label>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="countsForRanking" defaultChecked={t.countsForRanking} className="h-5 w-5" /> Suma puntos para el ranking</label>
         </ActionForm>

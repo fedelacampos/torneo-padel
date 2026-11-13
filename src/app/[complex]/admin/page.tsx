@@ -55,6 +55,8 @@ export default async function AdminHome({ params }: { params: Promise<{ complex:
             <div><label className="label">Desde</label><input name="startDate" type="date" className="input" required /></div>
             <div><label className="label">Hasta</label><input name="endDate" type="date" className="input" required /></div>
             <div><label className="label">Inscripción por jugador ($)</label><input name="entryFee" type="number" min="0" className="input" placeholder="0" /></div>
+            <div><label className="label">Teléfonos de contacto</label><input name="contactPhones" className="input" placeholder="11 2345-6789, 11 5555-4444" defaultValue={complex.adminWhatsapp ?? ""} /></div>
+            <div className="sm:col-span-2"><label className="label">Descripción (aclaraciones para los jugadores)</label><textarea name="notes" rows={3} className="input" placeholder="Ej: incluye pelotas nuevas y hidratación. Premios para campeones y finalistas." /></div>
           </ActionForm>
         </section>
 

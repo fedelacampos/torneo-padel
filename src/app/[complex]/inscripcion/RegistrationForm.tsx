@@ -17,7 +17,7 @@ function PlayerFields({ n }: { n: 1 | 2 }) {
   );
 }
 
-export function RegistrationForm({ slug, categories }: { slug: string; categories: Cat[] }) {
+export function RegistrationForm({ slug, categories, defaultCategory }: { slug: string; categories: Cat[]; defaultCategory?: string }) {
   const { state, pending, ref, onSubmit } = useFormAction(submitRegistration);
   const tournaments = [...new Set(categories.map((c) => c.tournament))];
   return (
@@ -25,7 +25,7 @@ export function RegistrationForm({ slug, categories }: { slug: string; categorie
       <input type="hidden" name="slug" value={slug} />
       <div className="card p-4">
         <label className="label">{tournaments.length === 1 ? `Categoría · ${tournaments[0]}` : "Torneo y categoría"} *</label>
-        <select name="categoryId" className="input" required defaultValue="">
+        <select name="categoryId" className="input" required defaultValue={categories.some((c) => c.id === defaultCategory) ? defaultCategory : ""}>
           <option value="" disabled>Elegí la categoría</option>
           {tournaments.length === 1
             ? categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)

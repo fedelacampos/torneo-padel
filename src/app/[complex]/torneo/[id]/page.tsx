@@ -4,8 +4,8 @@ import { db } from "@/lib/db";
 import { Header } from "@/components/Header";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { CategoryView } from "@/components/CategoryView";
-import { getCategoryFull, FORMAT_LABEL, STATUS_LABEL } from "@/lib/tournament";
-import { MATCH_FORMAT_LABEL, type MatchFormat } from "@/lib/scoring";
+import { EventInfo } from "@/components/EventInfo";
+import { getCategoryFull } from "@/lib/tournament";
 import { fmtDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -59,9 +59,7 @@ export default async function TournamentPage({
 
         {cat && (
           <div className="mt-4">
-            <p className="mb-5 text-xs text-neutral-500">
-              {FORMAT_LABEL[cat.format]} · {MATCH_FORMAT_LABEL[cat.matchFormat as MatchFormat]} · <b>{STATUS_LABEL[cat.status]}</b>
-            </p>
+            <EventInfo slug={slug} category={cat} tournament={t} complex={t.complex} open={cat.status === "REGISTRATION"} />
             <CategoryView cat={cat} />
           </div>
         )}

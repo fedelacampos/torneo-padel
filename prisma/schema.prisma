@@ -22,6 +22,7 @@ model Complex {
   mpLink        String? // link de pago de Mercado Pago
   mpAlias       String? // alias para transferencias
   adminPassword String // hash
+  location         String? // localidad / dirección del complejo
   coverUrl         String? // foto de portada
   bookingUrl       String? // link externo para reservar cancha
   restobarWhatsapp String? // WhatsApp que recibe los pedidos del restobar (si no, adminWhatsapp)
@@ -70,7 +71,8 @@ model Tournament {
   entryFee         Int      @default(0) // por jugador, en pesos
   registrationOpen Boolean  @default(true)
   countsForRanking Boolean  @default(true)
-  notes            String?
+  notes            String? // descripción / aclaraciones que se muestran en la ficha del torneo
+  contactPhones    String? // teléfonos de los organizadores, separados por coma
   createdAt        DateTime @default(now())
 
   categories Category[]
@@ -81,6 +83,8 @@ model Category {
   tournamentId      String
   tournament        Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   name              String // ej: "5ta Caballeros" (se usa también para el ranking)
+  eventName         String? // nombre del evento (si no, se usa el nombre de la categoría)
+  modality          String     @default("Doble")
   format            String     @default("ZONES_KO") // ZONES_KO | KO | AMERICANO
   matchFormat       String     @default("BEST_OF_3") // BEST_OF_3 | SUPER_TB
   zoneSize          Int        @default(3)

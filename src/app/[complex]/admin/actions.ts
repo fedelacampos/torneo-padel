@@ -74,6 +74,7 @@ export async function saveSettings(_: State, fd: FormData): Promise<State> {
       logoUrl,
       coverUrl,
       bookingUrl: s(fd, "bookingUrl") || null,
+      location: s(fd, "location") || null,
       restobarWhatsapp: s(fd, "restobarWhatsapp").replace(/\D/g, "") || null,
       primaryColor: /^#[0-9a-f]{6}$/i.test(s(fd, "primaryColor")) ? s(fd, "primaryColor") : c.primaryColor,
       adminWhatsapp: s(fd, "adminWhatsapp").replace(/\D/g, "") || null,
@@ -96,7 +97,10 @@ export async function createTournament(_: State, fd: FormData): Promise<State> {
   if (!s(fd, "name")) return { error: "Poné un nombre al torneo." };
   if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) return { error: "Revisá las fechas." };
   const t = await db.tournament.create({
-    data: { complexId: c.id, name: s(fd, "name"), startDate: start, endDate: end, entryFee: Number(s(fd, "entryFee")) || 0 },
+    data: {
+      complexId: c.id, name: s(fd, "name"), startDate: start, endDate: end, entryFee: Number(s(fd, "entryFee")) || 0,
+      contactPhones: s(fd, "contactPhones") || c.adminWhatsapp || null, notes: s(fd, "notes") || null,
+    },
   });
   redirect(`/${c.slug}/admin/torneo/${t.id}`);
 }
@@ -111,6 +115,8 @@ export async function updateTournament(_: State, fd: FormData): Promise<State> {
       entryFee: Number(s(fd, "entryFee")) || 0,
       registrationOpen: fd.get("registrationOpen") === "on",
       countsForRanking: fd.get("countsForRanking") === "on",
+      contactPhones: s(fd, "contactPhones") || null,
+      notes: s(fd, "notes") || null,
     },
   });
   revalidatePath(`/${c.slug}/admin/torneo/${t.id}`);
@@ -132,6 +138,8 @@ export async function addCategory(_: State, fd: FormData): Promise<State> {
     data: {
       tournamentId: t.id,
       name: s(fd, "name"),
+      eventName: s(fd, "eventName") || null,
+      modality: s(fd, "modality") || "Doble",
       format: s(fd, "format") || "ZONES_KO",
       matchFormat: s(fd, "matchFormat") || "BEST_OF_3",
       zoneSize: Math.min(6, Math.max(2, Number(s(fd, "zoneSize")) || 3)),
@@ -150,6 +158,8 @@ export async function updateCategory(_: State, fd: FormData): Promise<State> {
     where: { id: cat.id },
     data: {
       name: s(fd, "name") || cat.name,
+      eventName: s(fd, "eventName") || null,
+      modality: s(fd, "modality") || cat.modality,
       matchFormat: s(fd, "matchFormat") || cat.matchFormat,
       ...(locked ? {} : {
         format: s(fd, "format") || cat.format,

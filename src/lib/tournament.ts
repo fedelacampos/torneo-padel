@@ -5,7 +5,7 @@ import { parseSets, validateMatch, type MatchFormat, type SetScore } from "./sco
 import { americanoPoints, koCategoryPoints, parsePoints } from "./ranking";
 
 export const FORMAT_LABEL: Record<string, string> = {
-  ZONES_KO: "Zonas + eliminación directa",
+  ZONES_KO: "Zonas + fase final",
   KO: "Eliminación directa",
   AMERICANO: "Americano (todos contra todos)",
 };

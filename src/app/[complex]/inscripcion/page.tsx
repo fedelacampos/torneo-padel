@@ -8,9 +8,9 @@ export const dynamic = "force-dynamic";
 
 export default async function InscripcionPage({
   params, searchParams,
-}: { params: Promise<{ complex: string }>; searchParams: Promise<{ torneo?: string }> }) {
+}: { params: Promise<{ complex: string }>; searchParams: Promise<{ torneo?: string; cat?: string }> }) {
   const { complex: slug } = await params;
-  const { torneo } = await searchParams;
+  const { torneo, cat } = await searchParams;
   const complex = await db.complex.findUnique({ where: { slug } });
   if (!complex) notFound();
   const cats = await db.category.findMany({
@@ -33,7 +33,7 @@ export default async function InscripcionPage({
         {cats.length === 0 ? (
           <p className="card p-4 text-neutral-600">No hay inscripciones abiertas en este momento.</p>
         ) : (
-          <RegistrationForm slug={slug} categories={cats.map((c) => ({ id: c.id, name: c.name, tournament: c.tournament.name }))} />
+          <RegistrationForm slug={slug} defaultCategory={cat} categories={cats.map((c) => ({ id: c.id, name: c.name, tournament: c.tournament.name }))} />
         )}
       </main>
     </>

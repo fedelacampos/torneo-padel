@@ -68,7 +68,8 @@ export async function seedDemo() {
   await db.complex.deleteMany({ where: { slug: "demo" } });
   const complex = await db.complex.create({
     data: { slug: "demo", name: "Complejo Demo Pádel", adminPassword: hashPassword("demo1234"), adminWhatsapp: "5491100000000",
-      mpLink: "https://www.mercadopago.com.ar", mpAlias: "complejo.demo.mp" },
+      mpLink: "https://www.mercadopago.com.ar", mpAlias: "complejo.demo.mp",
+      location: "Av. San Martín 1234, Rosario, Santa Fe" },
   });
   await db.product.createMany({
     data: [
@@ -123,7 +124,8 @@ export async function seedDemo() {
   await playAll(c4.id, "KO", 4);
 
   // Torneo próximo con inscripción abierta
-  const next = await db.tournament.create({ data: { complexId: complex.id, name: "Torneo Fin de Año", startDate: new Date(now + 20 * day), endDate: new Date(now + 22 * day), entryFee: 20000 } });
+  const next = await db.tournament.create({ data: { complexId: complex.id, name: "Torneo Fin de Año", startDate: new Date(now + 20 * day), endDate: new Date(now + 22 * day), entryFee: 20000,
+    contactPhones: "11 2345-6789, 11 5555-4444", notes: "Incluye pelotas nuevas e hidratación.\nPremios para campeones y finalistas de cada categoría." } });
   for (const n of ["6ta Caballeros", "5ta Caballeros", "6ta Damas", "Mixto"])
     await db.category.create({ data: { tournamentId: next.id, name: n } });
 
