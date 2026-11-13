@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { Header } from "@/components/Header";
-import { getCategoryFull } from "@/lib/tournament";
+import { ensureBracket, getCategoryFull } from "@/lib/tournament";
 import { fmtDate } from "@/lib/format";
 import { CategoriesTab } from "./CategoriesTab";
 import { PairsTab } from "./PairsTab";
@@ -33,6 +33,7 @@ export default async function AdminTournament({
   const tab = TABS.find(([k]) => k === sp.tab)?.[0] ?? "categorias";
   const selected = t.categories.find((c) => c.id === sp.cat) ?? t.categories[0];
   const needsCat = tab === "parejas" || tab === "partidos";
+  if (needsCat && selected) await ensureBracket(selected.id);
   const cat = needsCat && selected ? await getCategoryFull(selected.id) : null;
   const q = (o: { tab?: string; cat?: string }) => `?tab=${o.tab ?? tab}${(o.cat ?? selected?.id) ? `&cat=${o.cat ?? selected?.id}` : ""}`;
 

@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { CategoryView } from "@/components/CategoryView";
 import { EventInfo } from "@/components/EventInfo";
-import { getCategoryFull } from "@/lib/tournament";
+import { ensureBracket, getCategoryFull } from "@/lib/tournament";
 import { fmtDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +23,7 @@ export default async function TournamentPage({
   const selected = t.categories.find((c) => c.id === catId) ?? t.categories[0];
   // Inscripción abierta si el torneo la tiene habilitada y alguna categoría todavía no se sorteó.
   const canRegister = t.registrationOpen && t.categories.some((c) => c.status === "REGISTRATION");
+  if (selected) await ensureBracket(selected.id);
   const cat = selected ? await getCategoryFull(selected.id) : null;
 
   return (

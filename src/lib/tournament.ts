@@ -98,6 +98,24 @@ export async function generateDraw(categoryId: string): Promise<string | null> {
   return null;
 }
 
+/**
+ * Categorías con zonas sorteadas antes de que existiera el cuadro armado de antemano:
+ * se les arma el cuadro final (con los lugares) la primera vez que se abren.
+ */
+export async function ensureBracket(categoryId: string) {
+  const cat = await db.category.findUnique({ where: { id: categoryId }, select: { format: true, status: true } });
+  if (!cat || cat.format !== "ZONES_KO" || cat.status !== "ZONES") return;
+  const [zones, ko] = await Promise.all([
+    db.zone.count({ where: { categoryId } }),
+    db.match.count({ where: { categoryId, stage: "KO" } }),
+  ]);
+  if (zones === 0 || ko > 0) return;
+  await buildSkeleton(categoryId);
+  // Si las zonas ya terminaron, el cuadro se completa con los clasificados.
+  const pending = await db.match.count({ where: { categoryId, stage: "ZONE", winnerId: null } });
+  if (pending === 0) await generatePlayoffs(categoryId);
+}
+
 /** Cuadro final con los lugares ("1° Zona A") antes de que terminen las zonas. */
 async function buildSkeleton(categoryId: string) {
   const zones = await db.zone.findMany({ where: { categoryId }, orderBy: { name: "asc" }, include: { _count: { select: { pairs: true } } } });
