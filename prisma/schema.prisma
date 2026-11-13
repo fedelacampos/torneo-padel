@@ -1,13 +1,14 @@
 // Modelo de datos del sistema de torneos de pádel.
-// Para producción cambiar provider a "postgresql" (por ejemplo Supabase).
+// Producción: Postgres (Supabase). Para desarrollo local con SQLite usar `npm run local:setup`.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // conexión "pooler" de Supabase (puerto 6543)
+  directUrl = env("DIRECT_URL") // conexión directa de Supabase (puerto 5432)
 }
 
 // Cada complejo es un cliente del sistema, con su propia marca y datos.

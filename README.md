@@ -38,10 +38,9 @@ Los jugadores se identifican por el teléfono, así los puntos se suman aunque c
 
 ```bash
 npm install
-cp .env.example .env
-npx prisma db push
-npm run db:seed      # complejo de demo: /demo  (admin: contraseña demo1234)
-npm run dev          # http://localhost:3000
+cp .env.example .env     # y poner DATABASE_URL="file:./dev.db"
+npm run local:setup      # base SQLite local + complejo de demo: /demo (admin: demo1234)
+npm run dev              # http://localhost:3000
 npm test             # tests de reglas de puntuación, sorteo y ranking
 ```
 
@@ -54,6 +53,7 @@ Para que los recordatorios salgan solos 1 hora antes:
 3. Llamar a `GET /api/recordatorios` cada 5 o 10 minutos (header `Authorization: Bearer <CRON_SECRET>`),
    o ejecutar `npm run reminders` desde un cron.
 
-## Producción
-Cambiar `provider` a `postgresql` en `prisma/schema.prisma` y usar una base Postgres (por ejemplo, Supabase).
-Se puede publicar en Vercel.
+## Publicar (Supabase + Vercel)
+1. Supabase: crear proyecto y copiar las dos "connection strings" (pooler 6543 y directa 5432).
+2. Vercel: importar el repositorio de GitHub y cargar las variables de `.env.example`.
+3. Cada publicación crea o actualiza las tablas y crea el complejo inicial si no existe.

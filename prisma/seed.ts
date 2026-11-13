@@ -64,7 +64,7 @@ async function playAll(categoryId: string, stage: string, upTo = Infinity) {
   }
 }
 
-async function main() {
+export async function seedDemo() {
   await db.complex.deleteMany({ where: { slug: "demo" } });
   const complex = await db.complex.create({
     data: { slug: "demo", name: "Complejo Demo Pádel", adminPassword: hashPassword("demo1234"), adminWhatsapp: "5491100000000",
@@ -113,4 +113,7 @@ async function main() {
   console.log("Listo. Público: /demo   Admin: /demo/admin (contraseña demo1234)");
 }
 
-main().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1); });
+// Ejecutado directamente: npm run db:seed
+if (process.argv[1]?.endsWith("seed.ts")) {
+  seedDemo().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1); });
+}

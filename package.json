@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && prisma db push --skip-generate && tsx prisma/setup.ts && next build",
     "start": "next start",
     "test": "vitest run",
-    "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "reminders": "tsx scripts/reminders.ts"
+    "reminders": "tsx scripts/reminders.ts",
+    "local:schema": "mkdir -p prisma/local && sed -e 's/provider  = \"postgresql\"/provider = \"sqlite\"/' -e '/directUrl/d' prisma/schema.prisma > prisma/local/schema.prisma",
+    "local:setup": "npm run local:schema && prisma db push --schema prisma/local/schema.prisma && tsx prisma/seed.ts",
+    "local:build": "npm run local:schema && prisma generate --schema prisma/local/schema.prisma && next build"
   },
   "dependencies": {
     "@prisma/client": "6.19.2",
